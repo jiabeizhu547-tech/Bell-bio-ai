@@ -1,0 +1,12 @@
+torch>=2.0
+torchvision
+numpy
+pandas
+matplotlib
+scikit-learn
+biopython
+tqdm
+ipykernel
+ipywidgets
+transformers>=4.30
+gradio>=4.0

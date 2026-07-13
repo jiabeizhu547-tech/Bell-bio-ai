@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 模型文件（太大，不提交 Git）
+models/*.pt
+models/*.pth
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 输出（可视化结果不提交）
+outputs/
+
+# 环境变量
+.env
+
+# ModelScope 部署（独立仓库）
+hf_space/
+
+# EC 分类器模型（小，保留）
+# protein_function/models/*.pt  ← 仅 266KB，提交
