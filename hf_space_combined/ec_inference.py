@@ -81,7 +81,12 @@ def _load_classifier():
     ckpt_path = Path(__file__).parent / "ec_classifier.pt"
     if ckpt_path.exists():
         checkpoint = torch.load(ckpt_path, map_location="cpu", weights_only=False)
-        model.load_state_dict(checkpoint)
+        # checkpoint 可能包含 model_state_dict（训练完整 checkpoint）
+        if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+            state_dict = checkpoint["model_state_dict"]
+        else:
+            state_dict = checkpoint
+        model.load_state_dict(state_dict)
         model.eval()
     else:
         raise FileNotFoundError(f"EC 模型未找到: {ckpt_path}")
