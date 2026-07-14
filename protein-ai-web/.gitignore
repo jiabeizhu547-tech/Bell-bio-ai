@@ -8,8 +8,10 @@ dist/
 .venv/
 venv/
 
-# Model weights (download from HuggingFace at runtime)
+# Model weights — download via setup.py
 inference/esm_model/
+inference/best_model.pt
+inference/best_model_esm2.pt
 
 # Generated images at runtime
 static/*.png
