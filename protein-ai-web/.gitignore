@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+
+# Virtual environment
+.venv/
+venv/
+
+# Model weights (download from HuggingFace at runtime)
+inference/esm_model/
+
+# Generated images at runtime
+static/*.png
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Gradio (not used at runtime)
+*.gradio/

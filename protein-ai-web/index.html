@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Protein AI — 蛋白质序列智能分析</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          heading: ['"Instrument Serif"', 'serif'],
+          body: ['"Barlow"', 'sans-serif'],
+        },
+        borderRadius: {
+          DEFAULT: '9999px',
+        },
+      },
+    },
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* === Reset & Base === */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Barlow', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* === Liquid Glass Utilities === */
+  .liquid-glass {
+    background: rgba(255,255,255,0.01);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .liquid-glass::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1.4px;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.45) 0%,
+      rgba(255,255,255,0.15) 20%,
+      rgba(255,255,255,0) 40%,
+      rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.15) 80%,
+      rgba(255,255,255,0.45) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .liquid-glass-strong {
+    background: rgba(255,255,255,0.01);
+    background-blend-mode: luminosity;
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    border: none;
+    box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .liquid-glass-strong::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1.4px;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.5) 0%,
+      rgba(255,255,255,0.2) 20%,
+      rgba(255,255,255,0) 40%,
+      rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.2) 80%,
+      rgba(255,255,255,0.5) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* === Scrollbar === */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 9999px; }
+
+  /* === Selection === */
+  ::selection { background: rgba(255,255,255,0.15); color: #fff; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script>
+  // framer-motion UMD 暴露为 window.Motion，直接使用即可
+  if (!window.Motion && window.FramerMotion) {
+    window.Motion = window.FramerMotion;
+  }
+  console.log('Motion available:', !!window.Motion);
+</script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+const { motion, AnimatePresence } = window.Motion || {};
+if (!motion) {
+  console.error('Framer Motion not loaded. Check the CDN script.');
+  document.getElementById('root').innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Loading Framer Motion...</div>';
+}
+
+// Suppress Framer Motion dev warnings about list keys
+const originalError = console.error;
+console.error = (...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('Each child in a list should have a unique "key" prop')) return;
+  originalError.apply(console, args);
+};
+
+// ============================================================================
+// FadingVideo Component
+// ============================================================================
+const FADE_MS = 500;
+const FADE_OUT_LEAD = 0.55;
+
+const FadingVideo = ({ src, className, style }) => {
+  const videoRef = useRef(null);
+  const rafRef = useRef(null);
+  const fadingOutRef = useRef(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const fadeTo = useCallback((target, duration) => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const video = videoRef.current;
+    if (!video) return;
+
+    const startOpacity = parseFloat(video.style.opacity) || 0;
+    const startTime = performance.now();
+
+    const animate = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentOpacity = startOpacity + (target - startOpacity) * progress;
+      video.style.opacity = currentOpacity;
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.style.opacity = '0';
+
+    const onLoadedData = () => {
+      video.play().catch(() => {});
+      fadeTo(1, FADE_MS);
+    };
+
+    const onTimeUpdate = () => {
+      if (!fadingOutRef.current && video.duration - video.currentTime <= FADE_OUT_LEAD && video.duration - video.currentTime > 0) {
+        fadingOutRef.current = true;
+        fadeTo(0, FADE_MS);
+      }
+    };
+
+    const onEnded = () => {
+      video.style.opacity = '0';
+      fadingOutRef.current = false;
+      setTimeout(() => {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+        fadeTo(1, FADE_MS);
+      }, 100);
+    };
+
+    const onError = () => {
+      console.warn('Video failed to load:', src);
+      setLoadFailed(true);
+    };
+
+    video.addEventListener('loadeddata', onLoadedData);
+    video.addEventListener('timeupdate', onTimeUpdate);
+    video.addEventListener('ended', onEnded);
+    video.addEventListener('error', onError);
+
+    // If video already has data (cached), trigger immediately
+    if (video.readyState >= 2) {
+      onLoadedData();
+    }
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      video.removeEventListener('loadeddata', onLoadedData);
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.removeEventListener('ended', onEnded);
+      video.removeEventListener('error', onError);
+    };
+  }, [fadeTo]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      autoPlay
+      muted
+      playsInline
+      preload="auto"
+      className={className}
+      style={loadFailed ? { ...style, display: 'none' } : style}
+    />
+  );
+};
+
+// ============================================================================
+// BlurText Component
+// ============================================================================
+const BlurText = ({ text, className }) => {
+  const containerRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const words = text.split(' ');
+
+  return (
+    <p ref={containerRef} className={className} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '0.1em' }}>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          initial={{ filter: 'blur(10px)', opacity: 0, y: 50 }}
+          animate={isVisible ? [
+            { filter: 'blur(5px)', opacity: 0.5, y: -5 },
+            { filter: 'blur(0px)', opacity: 1, y: 0 }
+          ] : {}}
+          transition={{
+            duration: 0.7,
+            times: [0, 0.5, 1],
+            ease: 'easeOut',
+            delay: (i * 100) / 1000,
+          }}
+          style={{ display: 'inline-block', marginRight: '0.28em' }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </p>
+  );
+};
+
+// ============================================================================
+// Icons
+// ============================================================================
+const ArrowUpRight = ({ className }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7 17L17 7" />
+    <path d="M7 7h10v10" />
+  </svg>
+);
+
+const PlayIcon = ({ className }) => (
+  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <polygon points="6 4 20 12 6 20 6 4" />
+  </svg>
+);
+
+const ClockIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="14" cy="14" r="12" />
+    <polyline points="14 7 14 14 19 17" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="14" cy="14" r="12" />
+    <ellipse cx="14" cy="14" rx="5" ry="12" />
+    <line x1="2" y1="14" x2="26" y2="14" />
+  </svg>
+);
+
+const ImageIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21H5Zm1-4h12l-3.75-5-3 4L9 13l-3 4Z" />
+  </svg>
+);
+
+const MovieIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M4 6.47 5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.89-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4Z" />
+  </svg>
+);
+
+// Custom icons for protein site
+const DnaIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 22C6 22 10 14 14 14C18 14 22 6 22 6" />
+    <path d="M6 6C6 6 10 14 14 14C18 14 22 22 22 22" />
+    <line x1="8" y1="6" x2="8" y2="22" />
+    <line x1="20" y1="6" x2="20" y2="22" />
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="14" width="5" height="10" rx="1" />
+    <rect x="11.5" y="8" width="5" height="16" rx="1" />
+    <rect x="20" y="3" width="5" height="21" rx="1" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="15 3 4 16 13 16 11 25 24 12 16 12 17 3" />
+  </svg>
+);
+
+const LightbulbIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1Zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7Z" />
+  </svg>
+);
+
+// ============================================================================
+// Section 1 — Hero
+// ============================================================================
+const Hero = () => {
+  const motionProps = (delay) => ({
+    initial: { filter: 'blur(10px)', opacity: 0, y: 20 },
+    animate: { filter: 'blur(0px)', opacity: 1, y: 0 },
+    transition: { duration: 0.7, ease: 'easeOut', delay },
+  });
+
+  return (
+    <section id="hero" className="relative min-h-screen overflow-hidden bg-black">
+      {/* Background Video */}
+      <FadingVideo
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
+        className="absolute left-1/2 top-0 -translate-x-1/2 object-cover object-top z-0"
+        style={{ width: '120%', height: '120%' }}
+      />
+
+      {/* Content Layer */}
+      <div className="relative z-10 flex flex-col h-full">
+
+        {/* Navbar */}
+        <nav className="fixed top-4 left-0 right-0 px-8 lg:px-16 z-50 flex items-center justify-between">
+          {/* Left: Logo */}
+          <a href="#hero" className="liquid-glass w-12 h-12 rounded-full flex items-center justify-center text-white text-xl hover:scale-105 transition-transform">
+            🧬
+          </a>
+
+          {/* Center: Nav Links (desktop only) */}
+          <div className="hidden md:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1">
+            {[
+              { label: '首页', href: '#hero' },
+              { label: '二级结构', href: '#capabilities' },
+              { label: '酶分类', href: '#capabilities' },
+              { label: '突变预测', href: '#capabilities' },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="px-3 py-2 text-sm font-medium text-white/90 font-body hover:text-white transition-colors rounded-full">
+                {label}
+              </a>
+            ))}
+            <a href="#app" className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium font-body whitespace-nowrap flex items-center gap-1.5 hover:bg-white/90 transition-colors">
+              在线试用
+              <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
+
+          {/* Right: Spacer */}
+          <div className="w-12 h-12 invisible" />
+        </nav>
+
+        {/* Hero Content */}
+        <div className="flex-1 flex flex-col items-center justify-center pt-24 px-4">
+          {/* Badge */}
+          <motion.div {...motionProps(0.4)} className="liquid-glass rounded-full inline-flex items-center mb-6">
+            <span className="bg-white text-black px-3 py-1 text-xs font-semibold rounded-full mr-2">New</span>
+            <span className="text-sm text-white/90 pr-3 font-body">基于 ESM-2 的零样本蛋白质分析工具</span>
+          </motion.div>
+
+          {/* Headline */}
+          <BlurText
+            text="从氨基酸序列到蛋白质功能预测"
+            className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.8] max-w-2xl justify-center tracking-[-4px]"
+          />
+
+          {/* Subheading */}
+          <motion.p {...motionProps(0.8)} className="mt-4 text-sm md:text-base text-white max-w-2xl font-body font-light leading-tight text-center">
+            二级结构预测 · EC 酶功能分类 · 突变效应打分。基于 ESM-2 预训练语言模型，浏览器打开即用，无需下载。
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div {...motionProps(1.1)} className="flex items-center gap-6 mt-6">
+            <a href="#app" className="liquid-glass-strong rounded-full px-5 py-2.5 text-sm font-medium text-white flex items-center gap-1.5 hover:bg-white/[0.02] transition-colors">
+              在线试用
+              <ArrowUpRight className="w-5 h-5" />
+            </a>
+            <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener" className="text-sm font-medium text-white font-body flex items-center gap-2 hover:text-white/80 transition-colors">
+              <PlayIcon className="w-4 h-4" />
+              GitHub 开源
+            </a>
+          </motion.div>
+
+          {/* Stats Row */}
+          <motion.div {...motionProps(1.3)} className="flex items-stretch gap-4 mt-8 flex-wrap justify-center">
+            {/* Card 1 */}
+            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
+              <div className="mb-3">
+                <DnaIcon />
+              </div>
+              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">89.8%</div>
+              <div className="text-xs text-white font-body font-light mt-2">二级结构预测 Q3 准确率</div>
+            </div>
+
+            {/* Card 2 */}
+            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
+              <div className="mb-3">
+                <ChartIcon />
+              </div>
+              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">87.3%</div>
+              <div className="text-xs text-white font-body font-light mt-2">EC 酶分类测试准确率</div>
+            </div>
+
+            {/* Card 3 */}
+            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
+              <div className="mb-3">
+                <ZapIcon />
+              </div>
+              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">0-Shot</div>
+              <div className="text-xs text-white font-body font-light mt-2">突变效应零样本预测</div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Tech Stack */}
+        <motion.div {...motionProps(1.4)} className="flex flex-col items-center gap-4 pb-8">
+          <div className="liquid-glass rounded-full px-3.5 py-1 text-xs font-medium text-white font-body">
+            技术栈 & 数据来源
+          </div>
+          <div className="flex items-center gap-8 md:gap-12 text-xl md:text-2xl tracking-tight font-heading italic text-white">
+            <span>ESM-2</span>
+            <span className="text-white/40">·</span>
+            <span>PyTorch</span>
+            <span className="text-white/40">·</span>
+            <span>Gradio</span>
+            <span className="text-white/40">·</span>
+            <span>UniProt</span>
+            <span className="text-white/40">·</span>
+            <span>PDB</span>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// ============================================================================
+// Section 2 — Capabilities
+// ============================================================================
+const Capabilities = () => {
+  const capabilities = [
+    {
+      icon: <DnaIcon />,
+      tags: ['残基级预测', 'Q3 89.8%', '集成学习', '生物规则平滑'],
+      title: '二级结构预测',
+      body: '输入氨基酸序列，对每个残基预测其二级结构类别：α-螺旋 (H)、β-折叠 (E)、无规卷曲 (C)。集成 CNN+BiLSTM 与 ESM-2 预训练模型，结合生物规则后处理，Q3 准确率达 89.8%。',
+    },
+    {
+      icon: <ChartIcon />,
+      tags: ['七大类', 'Acc 87.3%', 'ESM-2 嵌入', 'UniProt 数据'],
+      title: 'EC 酶功能分类',
+      body: '预测蛋白质的酶委员会（EC）一级分类。覆盖氧化还原酶、转移酶、水解酶、裂合酶、异构酶、连接酶、转位酶共七大类。基于 ESM-2 嵌入 + MLP 分类头，模型仅 266 KB。',
+    },
+    {
+      icon: <ZapIcon />,
+      tags: ['零样本', '无需训练', 'LLR 打分', '结构扰动'],
+      title: '突变效应预测',
+      body: '输入点突变（如 R175H），使用 ESM-2 掩码边际评分（Meier et al., NeurIPS 2021）预测致病性。结合 LLR 效应分数与嵌入余弦距离双指标综合判断，支持批量打分。',
+    },
+  ];
+
+  return (
+    <section id="capabilities" className="relative min-h-screen bg-black">
+      {/* Background Video */}
+      <FadingVideo
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        style={{}}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 px-8 md:px-16 lg:px-20 pt-24 pb-10 flex flex-col min-h-screen">
+        {/* Header */}
+        <div className="mb-auto">
+          <p className="text-sm font-body text-white/80 mb-6">// 功能模块</p>
+          <h2 className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px]">
+            三大核心<br/>能力
+          </h2>
+        </div>
+
+        {/* Three Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+          {capabilities.map((cap, i) => (
+            <div key={i} className="liquid-glass rounded-[1.25rem] p-6 min-h-[360px] flex flex-col">
+              {/* Top Row */}
+              <div className="flex items-start justify-between gap-4">
+                {/* Left: Nested icon box */}
+                <div className="liquid-glass w-11 h-11 rounded-[0.75rem] flex items-center justify-center text-white flex-shrink-0">
+                  {cap.icon}
+                </div>
+
+                {/* Right: Tags */}
+                <div className="flex flex-wrap justify-end gap-1.5 max-w-[70%]">
+                  {cap.tags.map((tag, j) => (
+                    <span key={j} className="liquid-glass rounded-full px-3 py-1 text-[11px] text-white/90 font-body whitespace-nowrap">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Middle: Spacer */}
+              <div className="flex-1" />
+
+              {/* Bottom: Title + Body */}
+              <div className="mt-6">
+                <h3 className="font-heading italic text-white text-3xl md:text-4xl tracking-[-1px] leading-none">
+                  {cap.title}
+                </h3>
+                <p className="mt-3 text-sm text-white/90 font-body font-light leading-snug max-w-[48ch]">
+                  {cap.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ============================================================================
+// Section 3 — Prediction (calls local API server)
+// ============================================================================
+
+// Spinner for loading states
+const Spinner = ({ className }) => (
+  <svg className={`animate-spin ${className || 'h-5 w-5 text-white'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+  </svg>
+);
+
+// Example sequences per tool
+const EXAMPLES = {
+  ss: ['MKVLILACLVALALACTVQAKTENPKKT', 'ACDEFGHIKLMNPQRSTVWYACDEFGHIK', 'MVKVGINGFGRIGRLVTRAAFNSGKVDIVAI'],
+  ec:  ['MSKVQVTGSVLKAAAVDAVAAAGYPVEITGDLKRLGFKGVFIEKGEWTSYDNKQAGS', 'MKTKLLLTLISVLVALALVITTAQAKTENPKKTEGKVKATKE'],
+  mut: { seq: 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGP', mut: 'L22P,D7A' },
+};
+
+const TOOLS = [
+  {
+    key: 'ss', icon: '🧬', label: '二级结构预测', desc: '残基级 H/E/C 分类',
+    tagline: 'V1 + ESM-2 集成模型，Q3 准确率 89.8%',
+    placeholder: '粘贴氨基酸序列（单字母大写），如 MKVLILACLVALALACTVQ...',
+  },
+  {
+    key: 'ec', icon: '🧪', label: 'EC 酶分类', desc: '七大类酶功能',
+    tagline: 'ESM-2 特征提取 + MLP，测试准确率 87.3%',
+    placeholder: '输入任意酶蛋白氨基酸序列…',
+  },
+  {
+    key: 'mut', icon: '⚡', label: '突变效应', desc: '零样本致病性预测',
+    tagline: 'ESM-2 零样本 LLR 打分，无需训练',
+    placeholder: '野生型蛋白质序列…',
+    placeholderMut: '突变描述，如 R175H, G245S, R248W',
+  },
+];
+
+// API helper
+const callAPI = async (endpoint, body, setResult, setLoading, setError) => {
+  setLoading(true);
+  setError(null);
+  setResult(null);
+  try {
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (data.error) {
+      setError(data.error);
+    } else {
+      setResult(data);
+    }
+  } catch (e) {
+    setError(`Network error: ${e.message}. Is the server running? Run: python server.py`);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const ResultImage = ({ src, label }) => {
+  if (!src) return null;
+  return (
+    <div className="liquid-glass rounded-2xl p-4">
+      <p className="text-[11px] text-white/30 font-body uppercase tracking-widest mb-3">{label || 'Chart'}</p>
+      <img src={src} alt={label} className="w-full rounded-xl" />
+    </div>
+  );
+};
+
+const AppSection = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Input states
+  const [inputSS, setInputSS] = useState('');
+  const [inputEC, setInputEC] = useState('');
+  const [inputMS, setInputMS] = useState('');
+  const [inputMut, setInputMut] = useState('');
+
+  // Result / loading / error states
+  const [resultSS, setResultSS] = useState(null);
+  const [resultEC, setResultEC] = useState(null);
+  const [resultMS, setResultMS] = useState(null);
+  const [loadingSS, setLoadingSS] = useState(false);
+  const [loadingEC, setLoadingEC] = useState(false);
+  const [loadingMS, setLoadingMS] = useState(false);
+  const [errorSS, setErrorSS] = useState(null);
+  const [errorEC, setErrorEC] = useState(null);
+  const [errorMS, setErrorMS] = useState(null);
+
+  const runSS = () => callAPI('/api/predict_ss', { sequence: inputSS }, setResultSS, setLoadingSS, setErrorSS);
+  const runEC = () => callAPI('/api/predict_ec', { sequence: inputEC }, setResultEC, setLoadingEC, setErrorEC);
+  const runMS = () => callAPI('/api/predict_mutation', { sequence: inputMS, mutations: inputMut }, setResultMS, setLoadingMS, setErrorMS);
+
+  // Handle Enter key
+  const handleKeyDown = (e, runner) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      runner();
+    }
+  };
+
+  const tool = TOOLS[activeTab];
+
+  // Fill input with example
+  const fillExample = (text, setter) => {
+    setter(text);
+  };
+
+  return (
+    <section id="app" className="relative min-h-screen bg-black">
+      <FadingVideo
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
+        className="absolute inset-0 w-full h-full object-cover z-0" style={{}}
+      />
+
+      <div className="relative z-10 px-4 md:px-8 lg:px-12 pt-20 pb-8 flex flex-col min-h-screen">
+        {/* Header */}
+        <div className="mb-10">
+          <p className="text-sm font-body text-white/80 mb-4">// 在线试用</p>
+          <h2 className="font-heading italic text-white text-5xl md:text-6xl lg:text-[5rem] leading-[0.9] tracking-[-3px]">
+            直接体验
+          </h2>
+          <p className="mt-3 text-sm text-white/60 font-body font-light max-w-lg">
+            在浏览器中直接运行蛋白质 AI 推理。输入序列，点击预测，即刻获得结果。
+          </p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {TOOLS.map((t, i) => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(i)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-200 ${
+                activeTab === i
+                  ? 'bg-white text-black'
+                  : 'liquid-glass text-white/60 hover:text-white/90'
+              }`}
+            >
+              <span className="text-base">{t.icon}</span>
+              <span>{t.label}</span>
+              <span className={`text-[11px] hidden sm:inline ${activeTab === i ? 'text-black/60' : 'text-white/30'}`}>
+                {t.desc}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* ======== TAB 1: Secondary Structure ======== */}
+        {activeTab === 0 && (
+          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
+            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
+              <div>
+                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
+                  <span className="text-2xl">🧬</span> 二级结构预测
+                </h3>
+                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
+              </div>
+
+              <textarea
+                value={inputSS}
+                onChange={e => setInputSS(e.target.value)}
+                onKeyDown={e => handleKeyDown(e, runSS)}
+                placeholder={tool.placeholder}
+                rows={4}
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
+              />
+
+              {/* Example chips */}
+              <div className="flex flex-wrap gap-2">
+                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Examples:</span>
+                {EXAMPLES.ss.map((ex, i) => (
+                  <button key={i} onClick={() => fillExample(ex, setInputSS)}
+                    className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
+                    {ex.slice(0, 20)}…
+                  </button>
+                ))}
+              </div>
+
+              <button onClick={runSS} disabled={loadingSS || !inputSS.trim()}
+                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
+                {loadingSS ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🔬</span><span>开始预测</span></>}
+              </button>
+
+              {/* Error */}
+              {errorSS && (
+                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
+                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
+                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorSS}</pre>
+                </div>
+              )}
+
+              {/* Results */}
+              {resultSS && (
+                <div className="flex flex-col gap-4 mt-2">
+                  <div dangerouslySetInnerHTML={{ __html: resultSS.colored_html }} />
+                  <div dangerouslySetInnerHTML={{ __html: resultSS.stats_html }} />
+                  <div className="liquid-glass rounded-2xl p-4">
+                    <pre className="text-xs text-white/60 font-mono whitespace-pre-wrap">{resultSS.structure_text}</pre>
+                  </div>
+                  <ResultImage src={resultSS.plot_url} label="Visualization" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======== TAB 2: EC Classification ======== */}
+        {activeTab === 1 && (
+          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
+            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
+              <div>
+                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
+                  <span className="text-2xl">🧪</span> EC 酶分类
+                </h3>
+                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
+              </div>
+
+              <textarea
+                value={inputEC}
+                onChange={e => setInputEC(e.target.value)}
+                onKeyDown={e => handleKeyDown(e, runEC)}
+                placeholder={tool.placeholder}
+                rows={4}
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
+              />
+
+              <div className="flex flex-wrap gap-2">
+                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Examples:</span>
+                {EXAMPLES.ec.map((ex, i) => (
+                  <button key={i} onClick={() => fillExample(ex, setInputEC)}
+                    className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
+                    {ex.slice(0, 25)}…
+                  </button>
+                ))}
+              </div>
+
+              <button onClick={runEC} disabled={loadingEC || !inputEC.trim()}
+                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
+                {loadingEC ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🧪</span><span>预测酶类别</span></>}
+              </button>
+
+              {errorEC && (
+                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
+                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
+                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorEC}</pre>
+                </div>
+              )}
+
+              {resultEC && (
+                <div className="flex flex-col gap-4 mt-2">
+                  <div dangerouslySetInnerHTML={{ __html: resultEC.html }} />
+                  <ResultImage src={resultEC.plot_url} label="Probability Distribution" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ======== TAB 3: Mutation Effect ======== */}
+        {activeTab === 2 && (
+          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
+            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
+              <div>
+                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
+                  <span className="text-2xl">⚡</span> 突变效应预测
+                </h3>
+                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
+              </div>
+
+              <textarea
+                value={inputMS}
+                onChange={e => setInputMS(e.target.value)}
+                placeholder={tool.placeholder}
+                rows={4}
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
+              />
+              <input
+                type="text"
+                value={inputMut}
+                onChange={e => setInputMut(e.target.value)}
+                onKeyDown={e => handleKeyDown(e, runMS)}
+                placeholder={tool.placeholderMut}
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
+              />
+
+              <div className="flex flex-wrap gap-2">
+                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Example:</span>
+                <button onClick={() => { fillExample(EXAMPLES.mut.seq, setInputMS); setInputMut(EXAMPLES.mut.mut); }}
+                  className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
+                  TP53片段 + {EXAMPLES.mut.mut}
+                </button>
+              </div>
+
+              <button onClick={runMS} disabled={loadingMS || !inputMS.trim() || !inputMut.trim()}
+                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
+                {loadingMS ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🧬</span><span>预测突变效应</span></>}
+              </button>
+
+              {errorMS && (
+                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
+                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
+                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorMS}</pre>
+                </div>
+              )}
+
+              {resultMS && (
+                <div className="flex flex-col gap-4 mt-2">
+                  <div dangerouslySetInnerHTML={{ __html: resultMS.html }} />
+                  {resultMS.plot_url && <ResultImage src={resultMS.plot_url} label="Mutation Effect Analysis" />}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Bottom links */}
+        <div className="flex items-center justify-center gap-6 mt-10 pb-6">
+          <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+            className="text-xs text-white/40 font-body hover:text-white/70 transition-colors flex items-center gap-1">
+            ModelScope <ArrowUpRight className="w-2.5 h-2.5" />
+          </a>
+          <span className="text-white/15">·</span>
+          <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener"
+            className="text-xs text-white/40 font-body hover:text-white/70 transition-colors flex items-center gap-1">
+            GitHub <ArrowUpRight className="w-2.5 h-2.5" />
+          </a>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 0.8s linear infinite; }
+      `}</style>
+    </section>
+  );
+};
+
+// ============================================================================
+// App
+// ============================================================================
+const App = () => {
+  return (
+    <main>
+      <Hero />
+      <Capabilities />
+      <AppSection />
+    </main>
+  );
+};
+
+// Mount
+try {
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+  console.log('App mounted successfully');
+} catch (e) {
+  console.error('Mount failed:', e);
+  document.getElementById('root').innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Error: ' + e.message + '</div>';
+}
+</script>
+</body>
+</html>
