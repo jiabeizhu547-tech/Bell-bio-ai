@@ -2,7 +2,6 @@ services:
   - type: web
     name: protein-ai
     env: python
-    pythonVersion: "3.11"
     buildCommand: pip install -r requirements-web.txt
     startCommand: python server.py
     envVars:
