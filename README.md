@@ -1,6 +1,6 @@
 # 🧬 Protein AI — 蛋白质序列智能分析
 
-> **从氨基酸序列预测蛋白质二级结构 & 酶功能分类**
+> **从氨基酸序列预测蛋白质二级结构 & 酶功能分类 & 突变效应预测**
 >
 > 朱家贝（Bell Zhu）| 生物信息学 × 深度学习 | 2026.07
 
@@ -18,6 +18,7 @@
 | **Phase 3** | Web 工具部署 | Gradio → ModelScope | 🟢 在线运行 |
 | **Phase 4** | 模型集成 + 论文 | Weighted Ensemble + Bio Smooth | Q3 **89.8%** |
 | **Phase 5** | 酶功能分类 | ESM-2 嵌入 + MLP | Acc **87.3%** |
+| **Phase 6** | 突变效应预测 | ESM-2 零样本 LLR 打分 | 零样本，无需训练 |
 
 ---
 
@@ -99,13 +100,50 @@ ESM-2 相对 V1 提升 **+3.8% Q3**。集成 + 生物规则平滑在此基础上
 
 ---
 
+## 🧬 模块三：突变效应预测
+
+### 任务定义
+
+输入蛋白质序列 + 点突变（如 R175H），预测该突变对蛋白质功能的影响：
+
+| 预测结论 | 含义 |
+|----------|------|
+| 🔴 **可能致病** | LLR < -0.5 且结构扰动 > 0.08 |
+| 🟠 **可能影响功能** | LLR < -0.5 或结构扰动 > 0.08 |
+| 🟢 **可能良性** | LLR > 0.5 且结构扰动 < 0.04 |
+| 🟡 **不确定** | 其他情况 |
+
+### 方法
+
+```
+蛋白质序列 + 突变 (如 A67T)
+    ↓
+    ├──→ 零样本打分：将目标位置替换为 <mask>
+    │    ↓ ESM-2 → log P(mutant | context) - log P(wildtype | context)
+    │    ↓ LLR 突变效应分数
+    │
+    └──→ 结构扰动：ESM-2 嵌入 (WT vs Mutant)
+         ↓ 余弦距离 → 结构变化程度
+    ↓
+综合判断 → 致病 / 良性 / 不确定
+```
+
+- **方法**：ESM-2 掩码边际评分（Meier et al., NeurIPS 2021）
+- **原理**：ESM-2 在 6500 万条蛋白质序列上预训练，学到氨基酸位置偏好
+- **无需训练**：纯零样本推理，开箱即用
+- **支持批量**：多个突变用逗号分隔，一次性打分
+- **双指标**：LLR（突变效应分数）+ 结构扰动（嵌入余弦距离）
+
+---
+
 ## 🚀 在线演示
 
 **ModelScope 空间**：https://modelscope.cn/studios/BellZhu/protein-ss
 
 功能：
-- 输入氨基酸序列 → 逐残基二级结构预测
-- 可视化（结构分布饼图 + 带状图）
+- 🧬 二级结构预测 → 逐残基 H/E/C 可视化
+- 🧪 EC 酶分类 → 7 大类概率分布
+- 🧬 突变效应预测 → 零样本 LLR 打分 + 结构扰动
 - 支持批量输入
 
 ---
@@ -181,15 +219,15 @@ protein-ai/
 ├── protein_function/                # 蛋白质功能预测
 │   ├── train_ec_classifier.py       # EC 分类器训练脚本
 │   └── models/
-│       ├── ec_classifier.pt         # 模型权重 (266 KB)
+│       ├── ec_classifier.pt         # EC 模型权重 (266 KB)
 │       └── ec_classification_results.png
 │
-├── outputs/                         # 可视化输出
-│   └── 3d_vis/                      # 5 个蛋白的 3D 结构图
-│
-└── hf_space/                        # ModelScope 部署（独立仓库）
-    ├── app.py                       # 部署版 Gradio 应用
-    └── esm_model/                   # ESM-2 本地模型文件
+├── hf_space/                        # ModelScope 部署（独立仓库）
+│   ├── app.py                       # 部署版 Gradio 应用（三 Tab）
+│   ├── inference.py                 # 二级结构推理
+│   ├── ec_inference.py              # EC 酶分类推理
+│   ├── mutation_inference.py        # 突变效应推理（零样本）
+│   └── esm_model/                   # ESM-2 本地模型文件
 ```
 
 ---
