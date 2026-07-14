@@ -12,7 +12,7 @@ import os
 import sys
 import traceback
 
-PORT = 8765
+PORT = int(os.environ.get("PORT", 8765))
 LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Lazy import — models load on first API call
