@@ -8,10 +8,9 @@ dist/
 .venv/
 venv/
 
-# Model weights — download via setup.py
+# Model weights
+# best_model.pt / best_model_esm2.pt — committed for HF Spaces deployment
 inference/esm_model/
-inference/best_model.pt
-inference/best_model_esm2.pt
 
 # Generated images at runtime
 static/*.png
