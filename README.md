@@ -99,56 +99,186 @@ ESM-2 相对 V1 提升 **+3.8% Q3**。集成 + 生物规则平滑在此基础上
 
 ---
 
-## 🚀 在线演示
+## 🚀 在线演示 · Live Demo
 
-**ModelScope 空间**：https://modelscope.cn/studios/BellZhu/protein-ss
+> **🔗 永久免费 · Permanent Free URL**
 
-功能：
-- 输入氨基酸序列 → 逐残基二级结构预测
-- 可视化（结构分布饼图 + 带状图）
-- 支持批量输入
+### ModelScope 魔搭社区（阿里云）
+
+👉 **https://modelscope.cn/studios/BellZhu/protein-ss**
+
+[![ModelScope](https://img.shields.io/badge/🚀-在线试用_Live_Demo-6366f1?style=for-the-badge)](https://modelscope.cn/studios/BellZhu/protein-ss)
+
+| 特性 Feature | 说明 Detail |
+|-------------|-------------|
+| 💰 费用 | **完全免费**（2vCPU / 16GB RAM / 50GB 存储） |
+| ⚡ 速度 | 首次启动约 3-5 分钟（模型下载），之后秒开 |
+| 🔓 注册 | 无需登录即可使用 |
+| 🌍 域名 | 永久有效，不会过期 |
+| 🎛️ 功能 | 二级结构预测 · EC 酶分类 · 突变效应分析 |
+
+### 网站首页 · Landing Page
+
+👉 **https://jiabeizhu547-tech.github.io/Bell-bio-ai/**
+
+项目介绍、安装指南、性能基准一站查看。
 
 ---
 
-## ⚡ 快速开始
+## ⚡ 快速开始 · Quick Start
 
-### 环境
+### 1️⃣ 克隆项目 · Clone
 
 ```bash
+git clone https://github.com/jiabeizhu547-tech/Bell-bio-ai.git
+cd Bell-bio-ai
+```
+
+### 2️⃣ 安装依赖 · Install Dependencies
+
+```bash
+# 创建虚拟环境（推荐）
+python -m venv .venv
+
 # 激活虚拟环境
 .venv\Scripts\activate       # Windows
-# source .venv/bin/activate  # macOS/Linux
+# source .venv/bin/activate  # macOS / Linux
 
 # 安装依赖
 pip install -r requirements.txt
 ```
 
-### 二级结构预测
+### 3️⃣ 启动本地服务 · Launch
 
 ```bash
-# 训练 V1 (CNN+BiLSTM)
-python train.py
+# 方式一：Gradio Web 应用（推荐）
+python app.py
+# → 浏览器自动打开 http://localhost:7860
 
-# 微调 ESM-2
-python train_esm2.py
-
-# 评估所有模型
-python evaluate.py
-
-# 单条序列推理
-python inference.py
+# 方式二：API 后端 + 前端页面
+python server.py
+# → 打开 index.html 或访问 http://localhost:5000
 ```
 
-### EC 酶分类
+### 4️⃣ 推理与训练 · Inference & Training
 
 ```bash
-# 训练 EC 分类器（自动从 UniProt 下载数据）
-python protein_function/train_ec_classifier.py
+# === 二级结构预测 ===
+python inference.py                     # 单条序列推理
+python train.py                         # 训练 V1 (CNN+BiLSTM)
+python train_esm2.py                    # 微调 ESM-2
+python evaluate.py                      # 评估所有模型
+
+# === EC 酶分类 ===
+python protein_function/train_ec_classifier.py  # 训练（自动从 UniProt 下载数据）
 ```
 
 ---
 
-## 📁 项目结构
+## 🤖 安装为 Claude Code 技能 · Install as Claude Code Skill
+
+将 Protein AI 注册为 Claude Code 技能，在对话中用 `/protein-ai` 直接调用蛋白质分析功能。
+
+Register Protein AI as a Claude Code skill to invoke protein analysis with `/protein-ai` in conversations.
+
+### 方法一：项目级技能（推荐）· Project-level Skill
+
+在项目根目录创建 `.claude/skills/protein-ai.md`：
+
+Create `.claude/skills/protein-ai.md` in your project root:
+
+```bash
+mkdir -p .claude/skills
+```
+
+```markdown
+---
+name: protein-ai
+description: >-
+  Predict protein secondary structure (Q3 89.8%),
+  EC enzyme classification (Acc 87.3%), and mutation
+  effects (zero-shot LLR scoring) from amino acid
+  sequences. Invoke when the user asks about protein
+  analysis, structure prediction, enzyme function,
+  or mutation pathogenicity.
+allowed-tools: [Bash, Read, Write]
+---
+
+# Protein AI Skill
+
+## 功能 · What it does
+
+- **🧬 二级结构预测**: 输入氨基酸序列 → 逐残基 H/E/C 分类，Q3 89.8%
+- **🧪 EC 酶分类**: 输入序列 → 7 类酶功能预测，Acc 87.3%
+- **⚡ 突变效应**: 输入点突变 → ESM-2 零样本 LLR 致病性打分
+
+## 使用方式 · How to use
+
+### 本地推理 · Local Inference
+```bash
+# 确保已安装依赖
+pip install -r requirements.txt
+
+# 二级结构预测
+python inference.py --sequence "MKVLILACLVALALACTVQ..."
+
+# EC 酶分类
+python -c "
+from protein_function.train_ec_classifier import predict
+print(predict('MSKVQVTGSVLKAAAVDAVAAAGYPVEITGDLKRLGFKGVFIEK'))
+"
+```
+
+### 在线 Demo · Online Demo
+无需安装：https://modelscope.cn/studios/BellZhu/protein-ss
+
+No installation: https://modelscope.cn/studios/BellZhu/protein-ss
+
+## 触发词 · Triggers
+
+用户说以下内容时自动调用：
+- "预测这个蛋白质的二级结构"
+- "这个酶属于哪一类"
+- "分析这个突变是否致病"
+- "predict secondary structure of this protein sequence"
+- "classify this enzyme"
+- "score this mutation"
+
+## 模型信息 · Model Info
+
+| 模型 | 架构 | Q3 / Acc | 大小 |
+|------|------|----------|------|
+| V1 | CNN + BiLSTM | 85.5% | 8.6 MB |
+| ESM-2 | Transformer 6L | 89.2% | 29 MB |
+| Ensemble | ESM-2 + V1 + Bio | 89.8% | 38 MB |
+| EC 分类器 | ESM-2 embed + MLP | 87.3% | 266 KB |
+```
+
+### 方法二：用户级技能（所有项目可用）· User-level Skill
+
+将上述文件放到 `~/.claude/skills/protein-ai.md`，所有项目均可使用 `/protein-ai`。
+
+Place the file at `~/.claude/skills/protein-ai.md` to make it available across all projects.
+
+### 使用 · Usage
+
+安装后在 Claude Code 中输入：
+
+After installation, in Claude Code:
+
+```
+/protein-ai 分析这段序列: MKVLILACLVALALACTVQAKTENPKKT
+```
+
+或直接说 / or just say:
+
+```
+用 Protein AI 预测这个突变是否致病: TP53 R175H
+```
+
+---
+
+## 📁 项目结构 · Project Structure
 
 ```
 protein-ai/

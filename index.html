@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Protein AI — 蛋白质序列智能分析</title>
+<title>Protein AI — 蛋白质序列智能分析 | 零门槛 · 开源 · 高精度</title>
+<meta name="description" content="Protein AI 是一款基于 ESM-2 预训练模型的蛋白质序列智能分析工具，支持二级结构预测、EC 酶功能分类、突变效应打分。开源免费，浏览器即用。">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -13,9 +14,7 @@
           heading: ['"Instrument Serif"', 'serif'],
           body: ['"Barlow"', 'sans-serif'],
         },
-        borderRadius: {
-          DEFAULT: '9999px',
-        },
+        borderRadius: { DEFAULT: '9999px' },
       },
     },
   }
@@ -24,7 +23,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* === Reset & Base === */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
@@ -35,69 +33,75 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* === Liquid Glass Utilities === */
+  /* === Liquid Glass === */
   .liquid-glass {
     background: rgba(255,255,255,0.01);
     background-blend-mode: luminosity;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    border: none;
     box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
   .liquid-glass::before {
-    content: "";
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    padding: 1.4px;
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
     background: linear-gradient(180deg,
-      rgba(255,255,255,0.45) 0%,
-      rgba(255,255,255,0.15) 20%,
-      rgba(255,255,255,0) 40%,
-      rgba(255,255,255,0) 60%,
-      rgba(255,255,255,0.15) 80%,
-      rgba(255,255,255,0.45) 100%);
+      rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+      rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
   }
   .liquid-glass-strong {
     background: rgba(255,255,255,0.01);
     background-blend-mode: luminosity;
     backdrop-filter: blur(50px);
     -webkit-backdrop-filter: blur(50px);
-    border: none;
     box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
   .liquid-glass-strong::before {
-    content: "";
-    position: absolute; inset: 0;
-    border-radius: inherit;
-    padding: 1.4px;
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
     background: linear-gradient(180deg,
-      rgba(255,255,255,0.5) 0%,
-      rgba(255,255,255,0.2) 20%,
-      rgba(255,255,255,0) 40%,
-      rgba(255,255,255,0) 60%,
-      rgba(255,255,255,0.2) 80%,
-      rgba(255,255,255,0.5) 100%);
+      rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 20%,
+      rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.5) 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
   }
 
-  /* === Scrollbar === */
+  /* === Scrollbar / Selection === */
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: #000; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 9999px; }
-
-  /* === Selection === */
   ::selection { background: rgba(255,255,255,0.15); color: #fff; }
+
+  /* === Code blocks === */
+  .code-block {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: #a0a0a0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .cmd { color: #64d8ff; }
+  .code-block .cmt { color: #555; }
+  .code-block .str { color: #a5d6ff; }
+
+  /* === Animation === */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 20px rgba(99,102,241,0.3); } 50% { box-shadow: 0 0 40px rgba(99,102,241,0.6); } }
+  .animate-spin { animation: spin 0.8s linear infinite; }
+  .glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
+
+  /* === Bilingual text helpers === */
+  .lang-zh { font-family: 'Barlow', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  .lang-en { font-family: 'Barlow', sans-serif; color: rgba(255,255,255,0.45); font-style: italic; }
 </style>
 </head>
 <body>
@@ -108,22 +112,13 @@
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
 <script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
 <script>
-  // framer-motion UMD 暴露为 window.Motion，直接使用即可
-  if (!window.Motion && window.FramerMotion) {
-    window.Motion = window.FramerMotion;
-  }
-  console.log('Motion available:', !!window.Motion);
+  if (!window.Motion && window.FramerMotion) { window.Motion = window.FramerMotion; }
 </script>
 
 <script type="text/babel">
-const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
-const { motion, AnimatePresence } = window.Motion || {};
-if (!motion) {
-  console.error('Framer Motion not loaded. Check the CDN script.');
-  document.getElementById('root').innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Loading Framer Motion...</div>';
-}
+const { useState, useEffect, useRef, useCallback } = React;
+const { motion } = window.Motion || {};
 
-// Suppress Framer Motion dev warnings about list keys
 const originalError = console.error;
 console.error = (...args) => {
   if (typeof args[0] === 'string' && args[0].includes('Each child in a list should have a unique "key" prop')) return;
@@ -131,7 +126,7 @@ console.error = (...args) => {
 };
 
 // ============================================================================
-// FadingVideo Component
+// Shared Components
 // ============================================================================
 const FADE_MS = 500;
 const FADE_OUT_LEAD = 0.55;
@@ -146,66 +141,37 @@ const FadingVideo = ({ src, className, style }) => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const video = videoRef.current;
     if (!video) return;
-
     const startOpacity = parseFloat(video.style.opacity) || 0;
     const startTime = performance.now();
-
     const animate = (now) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const currentOpacity = startOpacity + (target - startOpacity) * progress;
-      video.style.opacity = currentOpacity;
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(animate);
-      }
+      video.style.opacity = startOpacity + (target - startOpacity) * progress;
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
     };
-
     rafRef.current = requestAnimationFrame(animate);
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-
     video.style.opacity = '0';
-
-    const onLoadedData = () => {
-      video.play().catch(() => {});
-      fadeTo(1, FADE_MS);
-    };
-
+    const onLoadedData = () => { video.play().catch(() => {}); fadeTo(1, FADE_MS); };
     const onTimeUpdate = () => {
       if (!fadingOutRef.current && video.duration - video.currentTime <= FADE_OUT_LEAD && video.duration - video.currentTime > 0) {
-        fadingOutRef.current = true;
-        fadeTo(0, FADE_MS);
+        fadingOutRef.current = true; fadeTo(0, FADE_MS);
       }
     };
-
     const onEnded = () => {
-      video.style.opacity = '0';
-      fadingOutRef.current = false;
-      setTimeout(() => {
-        video.currentTime = 0;
-        video.play().catch(() => {});
-        fadeTo(1, FADE_MS);
-      }, 100);
+      video.style.opacity = '0'; fadingOutRef.current = false;
+      setTimeout(() => { video.currentTime = 0; video.play().catch(() => {}); fadeTo(1, FADE_MS); }, 100);
     };
-
-    const onError = () => {
-      console.warn('Video failed to load:', src);
-      setLoadFailed(true);
-    };
-
+    const onError = () => { setLoadFailed(true); };
     video.addEventListener('loadeddata', onLoadedData);
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('ended', onEnded);
     video.addEventListener('error', onError);
-
-    // If video already has data (cached), trigger immediately
-    if (video.readyState >= 2) {
-      onLoadedData();
-    }
-
+    if (video.readyState >= 2) onLoadedData();
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       video.removeEventListener('loadeddata', onLoadedData);
@@ -216,63 +182,30 @@ const FadingVideo = ({ src, className, style }) => {
   }, [fadeTo]);
 
   return (
-    <video
-      ref={videoRef}
-      src={src}
-      autoPlay
-      muted
-      playsInline
-      preload="auto"
-      className={className}
-      style={loadFailed ? { ...style, display: 'none' } : style}
-    />
+    <video ref={videoRef} src={src} autoPlay muted playsInline preload="auto"
+      className={className} style={loadFailed ? { ...style, display: 'none' } : style} />
   );
 };
 
-// ============================================================================
-// BlurText Component
-// ============================================================================
 const BlurText = ({ text, className }) => {
   const containerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect(); } }, { threshold: 0.1 });
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-
   const words = text.split(' ');
-
   return (
     <p ref={containerRef} className={className} style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', rowGap: '0.1em' }}>
       {words.map((word, i) => (
-        <motion.span
-          key={i}
+        <motion.span key={i}
           initial={{ filter: 'blur(10px)', opacity: 0, y: 50 }}
-          animate={isVisible ? [
-            { filter: 'blur(5px)', opacity: 0.5, y: -5 },
-            { filter: 'blur(0px)', opacity: 1, y: 0 }
-          ] : {}}
-          transition={{
-            duration: 0.7,
-            times: [0, 0.5, 1],
-            ease: 'easeOut',
-            delay: (i * 100) / 1000,
-          }}
-          style={{ display: 'inline-block', marginRight: '0.28em' }}
-        >
+          animate={isVisible ? { filter: 'blur(0px)', opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: 'easeOut', delay: (i * 100) / 1000 }}
+          style={{ display: 'inline-block', marginRight: '0.28em' }}>
           {word}
         </motion.span>
       ))}
@@ -280,77 +213,63 @@ const BlurText = ({ text, className }) => {
   );
 };
 
-// ============================================================================
-// Icons
-// ============================================================================
 const ArrowUpRight = ({ className }) => (
-  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M7 17L17 7" />
-    <path d="M7 7h10v10" />
+  <svg className={className || 'w-5 h-5'} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7 17L17 7" /><path d="M7 7h10v10" />
   </svg>
 );
 
-const PlayIcon = ({ className }) => (
-  <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <polygon points="6 4 20 12 6 20 6 4" />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="14" cy="14" r="12" />
-    <polyline points="14 7 14 14 19 17" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="14" cy="14" r="12" />
-    <ellipse cx="14" cy="14" rx="5" ry="12" />
-    <line x1="2" y1="14" x2="26" y2="14" />
-  </svg>
-);
-
-const ImageIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M5 21q-.825 0-1.412-.587T3 19V5q0-.825.588-1.412T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.587 1.413T19 21H5Zm1-4h12l-3.75-5-3 4L9 13l-3 4Z" />
-  </svg>
-);
-
-const MovieIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M4 6.47 5.76 10H20v8H4V6.47M22 4h-4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.89-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4Z" />
-  </svg>
-);
-
-// Custom icons for protein site
 const DnaIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 22C6 22 10 14 14 14C18 14 22 6 22 6" />
-    <path d="M6 6C6 6 10 14 14 14C18 14 22 22 22 22" />
-    <line x1="8" y1="6" x2="8" y2="22" />
-    <line x1="20" y1="6" x2="20" y2="22" />
+    <path d="M6 22C6 22 10 14 14 14C18 14 22 6 22 6" /><path d="M6 6C6 6 10 14 14 14C18 14 22 22 22 22" />
+    <line x1="8" y1="6" x2="8" y2="22" /><line x1="20" y1="6" x2="20" y2="22" />
   </svg>
 );
-
 const ChartIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="14" width="5" height="10" rx="1" />
-    <rect x="11.5" y="8" width="5" height="16" rx="1" />
-    <rect x="20" y="3" width="5" height="21" rx="1" />
+    <rect x="3" y="14" width="5" height="10" rx="1" /><rect x="11.5" y="8" width="5" height="16" rx="1" /><rect x="20" y="3" width="5" height="21" rx="1" />
   </svg>
 );
-
 const ZapIcon = () => (
   <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="15 3 4 16 13 16 11 25 24 12 16 12 17 3" />
   </svg>
 );
-
-const LightbulbIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1Zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7Z" />
+const GithubIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
   </svg>
+);
+const TerminalIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="5 9 10 14 5 19" /><line x1="14" y1="19" x2="23" y2="19" />
+  </svg>
+);
+const DownloadIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 17v4a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-4" /><polyline points="7 12 14 19 21 12" /><line x1="14" y1="19" x2="14" y2="3" />
+  </svg>
+);
+const ClaudeIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="6" width="22" height="16" rx="2" /><line x1="8" y1="10" x2="20" y2="10" /><line x1="8" y1="14" x2="20" y2="14" /><line x1="8" y1="18" x2="14" y2="18" />
+  </svg>
+);
+
+const SectionHeading = ({ eyebrow, title, subtitle }) => (
+  <div className="mb-16">
+    <p className="text-sm font-body text-white/60 mb-4 tracking-widest uppercase">{eyebrow}</p>
+    <h2 className="font-heading italic text-white text-5xl md:text-6xl lg:text-[5rem] leading-[0.9] tracking-[-3px]">{title}</h2>
+    {subtitle && <p className="mt-4 text-sm text-white/50 font-body font-light max-w-xl">{subtitle}</p>}
+  </div>
+);
+
+// Bilingual text pair
+const Bilingual = ({ zh, en }) => (
+  <p className="mb-1">
+    <span className="lang-zh text-white/90">{zh}</span>
+    <span className="lang-en block text-xs mt-0.5">{en}</span>
+  </p>
 );
 
 // ============================================================================
@@ -365,121 +284,97 @@ const Hero = () => {
 
   return (
     <section id="hero" className="relative min-h-screen overflow-hidden bg-black">
-      {/* Background Video */}
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
         className="absolute left-1/2 top-0 -translate-x-1/2 object-cover object-top z-0"
         style={{ width: '120%', height: '120%' }}
       />
-
-      {/* Content Layer */}
       <div className="relative z-10 flex flex-col h-full">
-
         {/* Navbar */}
         <nav className="fixed top-4 left-0 right-0 px-8 lg:px-16 z-50 flex items-center justify-between">
-          {/* Left: Logo */}
-          <a href="#hero" className="liquid-glass w-12 h-12 rounded-full flex items-center justify-center text-white text-xl hover:scale-105 transition-transform">
-            🧬
-          </a>
-
-          {/* Center: Nav Links (desktop only) */}
+          <a href="#hero" className="liquid-glass w-12 h-12 rounded-full flex items-center justify-center text-white text-xl hover:scale-105 transition-transform">🧬</a>
           <div className="hidden md:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1">
             {[
               { label: '首页', href: '#hero' },
-              { label: '二级结构', href: '#capabilities' },
-              { label: '酶分类', href: '#capabilities' },
-              { label: '突变预测', href: '#capabilities' },
+              { label: '为什么需要', href: '#why' },
+              { label: '核心功能', href: '#capabilities' },
+              { label: '快速开始', href: '#start' },
             ].map(({ label, href }) => (
-              <a key={label} href={href} className="px-3 py-2 text-sm font-medium text-white/90 font-body hover:text-white transition-colors rounded-full">
-                {label}
-              </a>
+              <a key={label} href={href} className="px-3 py-2 text-sm font-medium text-white/90 font-body hover:text-white transition-colors rounded-full">{label}</a>
             ))}
-            <a href="#app" className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium font-body whitespace-nowrap flex items-center gap-1.5 hover:bg-white/90 transition-colors">
-              在线试用
-              <ArrowUpRight className="w-4 h-4" />
+            <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+              className="bg-white text-black px-4 py-2 rounded-full text-sm font-medium font-body whitespace-nowrap flex items-center gap-1.5 hover:bg-white/90 transition-colors">
+              🚀 在线试用 <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
           </div>
-
-          {/* Right: Spacer */}
           <div className="w-12 h-12 invisible" />
         </nav>
 
         {/* Hero Content */}
         <div className="flex-1 flex flex-col items-center justify-center pt-24 px-4">
-          {/* Badge */}
           <motion.div {...motionProps(0.4)} className="liquid-glass rounded-full inline-flex items-center mb-6">
             <span className="bg-white text-black px-3 py-1 text-xs font-semibold rounded-full mr-2">New</span>
-            <span className="text-sm text-white/90 pr-3 font-body">基于 ESM-2 的零样本蛋白质分析工具</span>
+            <span className="text-sm text-white/90 pr-3 font-body">ESM-2 · PyTorch · Gradio &nbsp;|&nbsp; 开源免费</span>
           </motion.div>
 
-          {/* Headline */}
           <BlurText
             text="从氨基酸序列到蛋白质功能预测"
             className="text-6xl md:text-7xl lg:text-[5.5rem] font-heading italic text-white leading-[0.8] max-w-2xl justify-center tracking-[-4px]"
           />
 
-          {/* Subheading */}
           <motion.p {...motionProps(0.8)} className="mt-4 text-sm md:text-base text-white max-w-2xl font-body font-light leading-tight text-center">
             二级结构预测 · EC 酶功能分类 · 突变效应打分。基于 ESM-2 预训练语言模型，浏览器打开即用，无需下载。
           </motion.p>
 
-          {/* CTAs */}
-          <motion.div {...motionProps(1.1)} className="flex items-center gap-6 mt-6">
-            <a href="#app" className="liquid-glass-strong rounded-full px-5 py-2.5 text-sm font-medium text-white flex items-center gap-1.5 hover:bg-white/[0.02] transition-colors">
-              在线试用
-              <ArrowUpRight className="w-5 h-5" />
+          {/* ModelScope Prominent CTA */}
+          <motion.div {...motionProps(0.9)} className="mt-6">
+            <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+              className="liquid-glass-strong glow-pulse rounded-full px-8 py-4 text-base font-semibold text-white flex items-center gap-3 hover:bg-white/[0.02] transition-all duration-300 group">
+              <span className="text-2xl">🧬</span>
+              <div className="text-left">
+                <div className="text-sm leading-tight">在线试用 · Live Demo</div>
+                <div className="text-xs text-white/40 font-normal leading-tight">modelscope.cn/studios/BellZhu/protein-ss</div>
+              </div>
+              <ArrowUpRight className="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
-            <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener" className="text-sm font-medium text-white font-body flex items-center gap-2 hover:text-white/80 transition-colors">
-              <PlayIcon className="w-4 h-4" />
-              GitHub 开源
+          </motion.div>
+
+          {/* Secondary CTAs */}
+          <motion.div {...motionProps(1.1)} className="flex items-center gap-6 mt-4">
+            <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener"
+              className="liquid-glass rounded-full px-5 py-2.5 text-sm font-medium text-white flex items-center gap-2 hover:bg-white/[0.02] transition-colors">
+              <GithubIcon /> GitHub 开源
+            </a>
+            <a href="#start" className="text-sm font-medium text-white font-body flex items-center gap-2 hover:text-white/80 transition-colors">
+              <DownloadIcon /> 本地安装
             </a>
           </motion.div>
 
           {/* Stats Row */}
-          <motion.div {...motionProps(1.3)} className="flex items-stretch gap-4 mt-8 flex-wrap justify-center">
-            {/* Card 1 */}
-            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
-              <div className="mb-3">
-                <DnaIcon />
+          <motion.div {...motionProps(1.3)} className="flex items-stretch gap-4 mt-10 flex-wrap justify-center">
+            {[
+              { icon: <DnaIcon />, value: '89.8%', label: '二级结构 Q3 准确率', en: 'Secondary Structure Q3' },
+              { icon: <ChartIcon />, value: '87.3%', label: 'EC 酶分类准确率', en: 'EC Classification Acc' },
+              { icon: <ZapIcon />, value: '0-Shot', label: '突变效应零样本预测', en: 'Zero-shot Mutation Scoring' },
+            ].map(({ icon, value, label, en }) => (
+              <div key={label} className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
+                <div className="mb-3">{icon}</div>
+                <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">{value}</div>
+                <div className="text-xs text-white font-body font-light mt-2">{label}</div>
+                <div className="text-[10px] text-white/30 font-body mt-0.5">{en}</div>
               </div>
-              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">89.8%</div>
-              <div className="text-xs text-white font-body font-light mt-2">二级结构预测 Q3 准确率</div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
-              <div className="mb-3">
-                <ChartIcon />
-              </div>
-              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">87.3%</div>
-              <div className="text-xs text-white font-body font-light mt-2">EC 酶分类测试准确率</div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="liquid-glass p-5 w-[220px] rounded-[1.25rem] flex flex-col">
-              <div className="mb-3">
-                <ZapIcon />
-              </div>
-              <div className="font-heading italic text-white text-4xl tracking-[-1px] leading-none">0-Shot</div>
-              <div className="text-xs text-white font-body font-light mt-2">突变效应零样本预测</div>
-            </div>
+            ))}
           </motion.div>
         </div>
 
         {/* Tech Stack */}
         <motion.div {...motionProps(1.4)} className="flex flex-col items-center gap-4 pb-8">
-          <div className="liquid-glass rounded-full px-3.5 py-1 text-xs font-medium text-white font-body">
-            技术栈 & 数据来源
-          </div>
+          <div className="liquid-glass rounded-full px-3.5 py-1 text-xs font-medium text-white font-body">技术栈 & 数据来源</div>
           <div className="flex items-center gap-8 md:gap-12 text-xl md:text-2xl tracking-tight font-heading italic text-white">
-            <span>ESM-2</span>
-            <span className="text-white/40">·</span>
-            <span>PyTorch</span>
-            <span className="text-white/40">·</span>
-            <span>Gradio</span>
-            <span className="text-white/40">·</span>
-            <span>UniProt</span>
-            <span className="text-white/40">·</span>
+            <span>ESM-2</span><span className="text-white/40">·</span>
+            <span>PyTorch</span><span className="text-white/40">·</span>
+            <span>Gradio</span><span className="text-white/40">·</span>
+            <span>UniProt</span><span className="text-white/40">·</span>
             <span>PDB</span>
           </div>
         </motion.div>
@@ -489,453 +384,440 @@ const Hero = () => {
 };
 
 // ============================================================================
-// Section 2 — Capabilities
+// Section 2 — Why Protein AI (双语)
+// ============================================================================
+const WhyNeed = () => {
+  const reasons = [
+    {
+      icon: '🔬', zh: '生物信息学门槛高', en: 'Bioinformatics has a steep learning curve',
+      descZh: '传统蛋白质分析需要安装复杂软件、配置环境、下载大型数据库，对非专业人士极不友好。',
+      descEn: 'Traditional protein analysis requires installing complex software, configuring environments, and downloading massive databases — extremely unfriendly to non-experts.',
+    },
+    {
+      icon: '🧠', zh: '深度学习改变游戏规则', en: 'Deep learning is a game changer',
+      descZh: 'ESM-2 等蛋白质语言模型将预测精度推向前所未有的高度。我们集成 CNN+BiLSTM 与 ESM-2，Q3 达 89.8%。',
+      descEn: 'Protein language models like ESM-2 push prediction accuracy to unprecedented levels. Our ensemble of CNN+BiLSTM and ESM-2 achieves Q3 89.8%.',
+    },
+    {
+      icon: '⚡', zh: '零门槛，秒级出结果', en: 'Zero setup, results in seconds',
+      descZh: '无需生物信息学背景，无需 GPU，只需粘贴氨基酸序列，几秒内获得专业级预测结果。',
+      descEn: 'No bioinformatics background needed, no GPU required. Just paste an amino acid sequence and get professional-grade predictions in seconds.',
+    },
+    {
+      icon: '🔓', zh: '完全免费开源', en: '100% free and open source',
+      descZh: '代码完全开源（MIT），可本地部署，保护数据隐私。ModelScope 提供永久免费的云端 Demo。',
+      descEn: 'Fully open source (MIT). Deploy locally to protect data privacy. Permanent free cloud demo on ModelScope.',
+    },
+  ];
+
+  const useCases = [
+    { zh: '🧑‍🔬 结构生物学家快速筛查蛋白质结构特征', en: 'Structural biologists screening protein features' },
+    { zh: '💊 药物研发人员评估突变致病性', en: 'Drug researchers assessing mutation pathogenicity' },
+    { zh: '🧪 酶工程研究者进行酶功能分类', en: 'Enzyme engineers classifying enzyme functions' },
+    { zh: '🎓 生物信息学教学与学习工具', en: 'Bioinformatics education and learning tool' },
+    { zh: '🤖 AI 开发者将蛋白质分析集成到工作流', en: 'AI developers integrating protein analysis into workflows' },
+  ];
+
+  return (
+    <section id="why" className="relative min-h-screen bg-black py-24">
+      <FadingVideo
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
+        className="absolute inset-0 w-full h-full object-cover z-0" style={{}}
+      />
+      <div className="relative z-10 px-8 md:px-16 lg:px-20">
+        <SectionHeading
+          eyebrow="// 为什么需要 Protein AI / Why Protein AI"
+          title="一个工具，解决蛋白质分析三大难题"
+          subtitle="One tool, three protein analysis challenges solved."
+        />
+
+        {/* 4 Reason Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-20">
+          {reasons.map((r, i) => (
+            <div key={i} className="liquid-glass rounded-[1.25rem] p-6 flex flex-col gap-3">
+              <span className="text-3xl">{r.icon}</span>
+              <h3 className="font-body font-semibold text-white text-base">{r.zh}</h3>
+              <p className="text-xs text-white/35 font-body italic">{r.en}</p>
+              <p className="text-sm text-white/75 font-body leading-relaxed">{r.descZh}</p>
+              <p className="text-[11px] text-white/35 font-body leading-snug italic">{r.descEn}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Who is it for */}
+        <div className="liquid-glass rounded-[1.5rem] p-8 md:p-10">
+          <h3 className="font-heading italic text-white text-3xl md:text-4xl tracking-[-1px] mb-2">适用场景</h3>
+          <p className="text-xs text-white/30 font-body italic mb-6">Who is this for</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {useCases.map((uc, i) => (
+              <div key={i} className="liquid-glass rounded-full px-4 py-2.5 text-sm text-white/80 font-body flex items-center gap-2">
+                <span>{uc.zh}</span>
+                <span className="text-[10px] text-white/25 italic hidden sm:inline">({uc.en})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// ============================================================================
+// Section 3 — Capabilities (keep existing design, add English)
 // ============================================================================
 const Capabilities = () => {
   const capabilities = [
     {
       icon: <DnaIcon />,
       tags: ['残基级预测', 'Q3 89.8%', '集成学习', '生物规则平滑'],
+      tagsEn: 'Residue-level · Ensemble · Bio-smoothing',
       title: '二级结构预测',
-      body: '输入氨基酸序列，对每个残基预测其二级结构类别：α-螺旋 (H)、β-折叠 (E)、无规卷曲 (C)。集成 CNN+BiLSTM 与 ESM-2 预训练模型，结合生物规则后处理，Q3 准确率达 89.8%。',
+      titleEn: 'Secondary Structure',
+      body: '输入氨基酸序列，对每个残基预测二级结构：α-螺旋 (H)、β-折叠 (E)、无规卷曲 (C)。集成 CNN+BiLSTM 与 ESM-2，Q3 达 89.8%。',
+      bodyEn: 'Predict per-residue secondary structure (H/E/C) from amino acid sequence. Ensemble of CNN+BiLSTM and ESM-2 with biological rule smoothing.',
     },
     {
       icon: <ChartIcon />,
       tags: ['七大类', 'Acc 87.3%', 'ESM-2 嵌入', 'UniProt 数据'],
+      tagsEn: '7 classes · ESM-2 embeddings · UniProt',
       title: 'EC 酶功能分类',
-      body: '预测蛋白质的酶委员会（EC）一级分类。覆盖氧化还原酶、转移酶、水解酶、裂合酶、异构酶、连接酶、转位酶共七大类。基于 ESM-2 嵌入 + MLP 分类头，模型仅 266 KB。',
+      titleEn: 'EC Enzyme Classification',
+      body: '预测酶委员会（EC）一级分类。覆盖氧化还原酶、转移酶、水解酶等七大类。基于 ESM-2 嵌入 + MLP，模型仅 266 KB。',
+      bodyEn: 'Predict EC primary class across 7 categories. ESM-2 embeddings + lightweight MLP classifier (266 KB). Trained on 33,331 UniProt sequences.',
     },
     {
       icon: <ZapIcon />,
       tags: ['零样本', '无需训练', 'LLR 打分', '结构扰动'],
+      tagsEn: 'Zero-shot · LLR scoring · No training',
       title: '突变效应预测',
-      body: '输入点突变（如 R175H），使用 ESM-2 掩码边际评分（Meier et al., NeurIPS 2021）预测致病性。结合 LLR 效应分数与嵌入余弦距离双指标综合判断，支持批量打分。',
+      titleEn: 'Mutation Effect Prediction',
+      body: '输入点突变（如 R175H），使用 ESM-2 掩码边际评分预测致病性。LLR 效应分数 + 嵌入余弦距离双指标综合判断。',
+      bodyEn: 'Predict mutation pathogenicity using ESM-2 masked marginal scoring (Meier et al., NeurIPS 2021). Dual-metric: LLR score + embedding cosine distance.',
     },
   ];
 
   return (
     <section id="capabilities" className="relative min-h-screen bg-black">
-      {/* Background Video */}
-      <FadingVideo
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
-        className="absolute inset-0 w-full h-full object-cover z-0"
-        style={{}}
-      />
-
-      {/* Content */}
-      <div className="relative z-10 px-8 md:px-16 lg:px-20 pt-24 pb-10 flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="mb-auto">
-          <p className="text-sm font-body text-white/80 mb-6">// 功能模块</p>
-          <h2 className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px]">
-            三大核心<br/>能力
-          </h2>
-        </div>
-
-        {/* Three Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-          {capabilities.map((cap, i) => (
-            <div key={i} className="liquid-glass rounded-[1.25rem] p-6 min-h-[360px] flex flex-col">
-              {/* Top Row */}
-              <div className="flex items-start justify-between gap-4">
-                {/* Left: Nested icon box */}
-                <div className="liquid-glass w-11 h-11 rounded-[0.75rem] flex items-center justify-center text-white flex-shrink-0">
-                  {cap.icon}
-                </div>
-
-                {/* Right: Tags */}
-                <div className="flex flex-wrap justify-end gap-1.5 max-w-[70%]">
-                  {cap.tags.map((tag, j) => (
-                    <span key={j} className="liquid-glass rounded-full px-3 py-1 text-[11px] text-white/90 font-body whitespace-nowrap">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Middle: Spacer */}
-              <div className="flex-1" />
-
-              {/* Bottom: Title + Body */}
-              <div className="mt-6">
-                <h3 className="font-heading italic text-white text-3xl md:text-4xl tracking-[-1px] leading-none">
-                  {cap.title}
-                </h3>
-                <p className="mt-3 text-sm text-white/90 font-body font-light leading-snug max-w-[48ch]">
-                  {cap.body}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// ============================================================================
-// Section 3 — Prediction (calls local API server)
-// ============================================================================
-
-// Spinner for loading states
-const Spinner = ({ className }) => (
-  <svg className={`animate-spin ${className || 'h-5 w-5 text-white'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-  </svg>
-);
-
-// Example sequences per tool
-const EXAMPLES = {
-  ss: ['MKVLILACLVALALACTVQAKTENPKKT', 'ACDEFGHIKLMNPQRSTVWYACDEFGHIK', 'MVKVGINGFGRIGRLVTRAAFNSGKVDIVAI'],
-  ec:  ['MSKVQVTGSVLKAAAVDAVAAAGYPVEITGDLKRLGFKGVFIEKGEWTSYDNKQAGS', 'MKTKLLLTLISVLVALALVITTAQAKTENPKKTEGKVKATKE'],
-  mut: { seq: 'MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGP', mut: 'L22P,D7A' },
-};
-
-const TOOLS = [
-  {
-    key: 'ss', icon: '🧬', label: '二级结构预测', desc: '残基级 H/E/C 分类',
-    tagline: 'V1 + ESM-2 集成模型，Q3 准确率 89.8%',
-    placeholder: '粘贴氨基酸序列（单字母大写），如 MKVLILACLVALALACTVQ...',
-  },
-  {
-    key: 'ec', icon: '🧪', label: 'EC 酶分类', desc: '七大类酶功能',
-    tagline: 'ESM-2 特征提取 + MLP，测试准确率 87.3%',
-    placeholder: '输入任意酶蛋白氨基酸序列…',
-  },
-  {
-    key: 'mut', icon: '⚡', label: '突变效应', desc: '零样本致病性预测',
-    tagline: 'ESM-2 零样本 LLR 打分，无需训练',
-    placeholder: '野生型蛋白质序列…',
-    placeholderMut: '突变描述，如 R175H, G245S, R248W',
-  },
-];
-
-// API helper
-const callAPI = async (endpoint, body, setResult, setLoading, setError) => {
-  setLoading(true);
-  setError(null);
-  setResult(null);
-  try {
-    const resp = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const data = await resp.json();
-    if (data.error) {
-      setError(data.error);
-    } else {
-      setResult(data);
-    }
-  } catch (e) {
-    setError(`Network error: ${e.message}. Is the server running? Run: python server.py`);
-  } finally {
-    setLoading(false);
-  }
-};
-
-const ResultImage = ({ src, label }) => {
-  if (!src) return null;
-  return (
-    <div className="liquid-glass rounded-2xl p-4">
-      <p className="text-[11px] text-white/30 font-body uppercase tracking-widest mb-3">{label || 'Chart'}</p>
-      <img src={src} alt={label} className="w-full rounded-xl" />
-    </div>
-  );
-};
-
-const AppSection = () => {
-  const [activeTab, setActiveTab] = useState(0);
-
-  // Input states
-  const [inputSS, setInputSS] = useState('');
-  const [inputEC, setInputEC] = useState('');
-  const [inputMS, setInputMS] = useState('');
-  const [inputMut, setInputMut] = useState('');
-
-  // Result / loading / error states
-  const [resultSS, setResultSS] = useState(null);
-  const [resultEC, setResultEC] = useState(null);
-  const [resultMS, setResultMS] = useState(null);
-  const [loadingSS, setLoadingSS] = useState(false);
-  const [loadingEC, setLoadingEC] = useState(false);
-  const [loadingMS, setLoadingMS] = useState(false);
-  const [errorSS, setErrorSS] = useState(null);
-  const [errorEC, setErrorEC] = useState(null);
-  const [errorMS, setErrorMS] = useState(null);
-
-  const runSS = () => callAPI('/api/predict_ss', { sequence: inputSS }, setResultSS, setLoadingSS, setErrorSS);
-  const runEC = () => callAPI('/api/predict_ec', { sequence: inputEC }, setResultEC, setLoadingEC, setErrorEC);
-  const runMS = () => callAPI('/api/predict_mutation', { sequence: inputMS, mutations: inputMut }, setResultMS, setLoadingMS, setErrorMS);
-
-  // Handle Enter key
-  const handleKeyDown = (e, runner) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      runner();
-    }
-  };
-
-  const tool = TOOLS[activeTab];
-
-  // Fill input with example
-  const fillExample = (text, setter) => {
-    setter(text);
-  };
-
-  return (
-    <section id="app" className="relative min-h-screen bg-black">
       <FadingVideo
         src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_094631_d30ab262-45ee-4b7d-99f3-5d5848c8ef13.mp4"
         className="absolute inset-0 w-full h-full object-cover z-0" style={{}}
       />
-
-      <div className="relative z-10 px-4 md:px-8 lg:px-12 pt-20 pb-8 flex flex-col min-h-screen">
-        {/* Header */}
-        <div className="mb-10">
-          <p className="text-sm font-body text-white/80 mb-4">// 在线试用</p>
-          <h2 className="font-heading italic text-white text-5xl md:text-6xl lg:text-[5rem] leading-[0.9] tracking-[-3px]">
-            直接体验
+      <div className="relative z-10 px-8 md:px-16 lg:px-20 pt-24 pb-10 flex flex-col min-h-screen">
+        <div className="mb-auto">
+          <p className="text-sm font-body text-white/80 mb-6">// 核心功能 / Core Capabilities</p>
+          <h2 className="font-heading italic text-white text-6xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-[-3px]">
+            三大核心<br/>能力
           </h2>
-          <p className="mt-3 text-sm text-white/60 font-body font-light max-w-lg">
-            在浏览器中直接运行蛋白质 AI 推理。输入序列，点击预测，即刻获得结果。
-          </p>
+          <p className="mt-3 text-sm text-white/30 font-body italic">Three core capabilities</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {TOOLS.map((t, i) => (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(i)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-body font-medium transition-all duration-200 ${
-                activeTab === i
-                  ? 'bg-white text-black'
-                  : 'liquid-glass text-white/60 hover:text-white/90'
-              }`}
-            >
-              <span className="text-base">{t.icon}</span>
-              <span>{t.label}</span>
-              <span className={`text-[11px] hidden sm:inline ${activeTab === i ? 'text-black/60' : 'text-white/30'}`}>
-                {t.desc}
-              </span>
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
+          {capabilities.map((cap, i) => (
+            <div key={i} className="liquid-glass rounded-[1.25rem] p-6 min-h-[420px] flex flex-col">
+              <div className="flex items-start justify-between gap-4">
+                <div className="liquid-glass w-11 h-11 rounded-[0.75rem] flex items-center justify-center text-white flex-shrink-0">{cap.icon}</div>
+                <div className="flex flex-wrap justify-end gap-1.5 max-w-[70%]">
+                  {cap.tags.map((tag, j) => (
+                    <span key={j} className="liquid-glass rounded-full px-3 py-1 text-[11px] text-white/90 font-body whitespace-nowrap">{tag}</span>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-white/25 font-body mt-2 italic">{cap.tagsEn}</p>
+              <div className="flex-1" />
+              <div className="mt-6">
+                <h3 className="font-heading italic text-white text-3xl md:text-4xl tracking-[-1px] leading-none">{cap.title}</h3>
+                <p className="text-[13px] text-white/30 font-body italic mt-0.5">{cap.titleEn}</p>
+                <p className="mt-3 text-sm text-white/90 font-body font-light leading-snug">{cap.body}</p>
+                <p className="mt-2 text-[11px] text-white/35 font-body leading-snug italic">{cap.bodyEn}</p>
+              </div>
+            </div>
           ))}
         </div>
-
-        {/* ======== TAB 1: Secondary Structure ======== */}
-        {activeTab === 0 && (
-          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
-            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
-              <div>
-                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
-                  <span className="text-2xl">🧬</span> 二级结构预测
-                </h3>
-                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
-              </div>
-
-              <textarea
-                value={inputSS}
-                onChange={e => setInputSS(e.target.value)}
-                onKeyDown={e => handleKeyDown(e, runSS)}
-                placeholder={tool.placeholder}
-                rows={4}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
-              />
-
-              {/* Example chips */}
-              <div className="flex flex-wrap gap-2">
-                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Examples:</span>
-                {EXAMPLES.ss.map((ex, i) => (
-                  <button key={i} onClick={() => fillExample(ex, setInputSS)}
-                    className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
-                    {ex.slice(0, 20)}…
-                  </button>
-                ))}
-              </div>
-
-              <button onClick={runSS} disabled={loadingSS || !inputSS.trim()}
-                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
-                {loadingSS ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🔬</span><span>开始预测</span></>}
-              </button>
-
-              {/* Error */}
-              {errorSS && (
-                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
-                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
-                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorSS}</pre>
-                </div>
-              )}
-
-              {/* Results */}
-              {resultSS && (
-                <div className="flex flex-col gap-4 mt-2">
-                  <div dangerouslySetInnerHTML={{ __html: resultSS.colored_html }} />
-                  <div dangerouslySetInnerHTML={{ __html: resultSS.stats_html }} />
-                  <div className="liquid-glass rounded-2xl p-4">
-                    <pre className="text-xs text-white/60 font-mono whitespace-pre-wrap">{resultSS.structure_text}</pre>
-                  </div>
-                  <ResultImage src={resultSS.plot_url} label="Visualization" />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ======== TAB 2: EC Classification ======== */}
-        {activeTab === 1 && (
-          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
-            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
-              <div>
-                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
-                  <span className="text-2xl">🧪</span> EC 酶分类
-                </h3>
-                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
-              </div>
-
-              <textarea
-                value={inputEC}
-                onChange={e => setInputEC(e.target.value)}
-                onKeyDown={e => handleKeyDown(e, runEC)}
-                placeholder={tool.placeholder}
-                rows={4}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
-              />
-
-              <div className="flex flex-wrap gap-2">
-                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Examples:</span>
-                {EXAMPLES.ec.map((ex, i) => (
-                  <button key={i} onClick={() => fillExample(ex, setInputEC)}
-                    className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
-                    {ex.slice(0, 25)}…
-                  </button>
-                ))}
-              </div>
-
-              <button onClick={runEC} disabled={loadingEC || !inputEC.trim()}
-                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
-                {loadingEC ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🧪</span><span>预测酶类别</span></>}
-              </button>
-
-              {errorEC && (
-                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
-                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
-                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorEC}</pre>
-                </div>
-              )}
-
-              {resultEC && (
-                <div className="flex flex-col gap-4 mt-2">
-                  <div dangerouslySetInnerHTML={{ __html: resultEC.html }} />
-                  <ResultImage src={resultEC.plot_url} label="Probability Distribution" />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ======== TAB 3: Mutation Effect ======== */}
-        {activeTab === 2 && (
-          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
-            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
-              <div>
-                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
-                  <span className="text-2xl">⚡</span> 突变效应预测
-                </h3>
-                <p className="mt-1 text-sm text-white/50 font-body">{tool.tagline}</p>
-              </div>
-
-              <textarea
-                value={inputMS}
-                onChange={e => setInputMS(e.target.value)}
-                placeholder={tool.placeholder}
-                rows={4}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
-              />
-              <input
-                type="text"
-                value={inputMut}
-                onChange={e => setInputMut(e.target.value)}
-                onKeyDown={e => handleKeyDown(e, runMS)}
-                placeholder={tool.placeholderMut}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors"
-              />
-
-              <div className="flex flex-wrap gap-2">
-                <span className="text-[10px] text-white/25 font-body uppercase tracking-widest self-center mr-1">Example:</span>
-                <button onClick={() => { fillExample(EXAMPLES.mut.seq, setInputMS); setInputMut(EXAMPLES.mut.mut); }}
-                  className="text-[11px] text-white/40 font-mono liquid-glass rounded-full px-3 py-1 hover:text-white/70 transition-colors">
-                  TP53片段 + {EXAMPLES.mut.mut}
-                </button>
-              </div>
-
-              <button onClick={runMS} disabled={loadingMS || !inputMS.trim() || !inputMut.trim()}
-                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed">
-                {loadingMS ? <><Spinner /><span>Predicting…</span></> : <><span className="text-lg">🧬</span><span>预测突变效应</span></>}
-              </button>
-
-              {errorMS && (
-                <div className="liquid-glass rounded-2xl p-5 border border-red-500/20">
-                  <p className="text-sm text-red-400 font-body font-medium mb-1">Prediction failed</p>
-                  <pre className="text-xs text-red-300/70 font-mono whitespace-pre-wrap">{errorMS}</pre>
-                </div>
-              )}
-
-              {resultMS && (
-                <div className="flex flex-col gap-4 mt-2">
-                  <div dangerouslySetInnerHTML={{ __html: resultMS.html }} />
-                  {resultMS.plot_url && <ResultImage src={resultMS.plot_url} label="Mutation Effect Analysis" />}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Bottom links */}
-        <div className="flex items-center justify-center gap-6 mt-10 pb-6">
-          <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
-            className="text-xs text-white/40 font-body hover:text-white/70 transition-colors flex items-center gap-1">
-            ModelScope <ArrowUpRight className="w-2.5 h-2.5" />
-          </a>
-          <span className="text-white/15">·</span>
-          <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener"
-            className="text-xs text-white/40 font-body hover:text-white/70 transition-colors flex items-center gap-1">
-            GitHub <ArrowUpRight className="w-2.5 h-2.5" />
-          </a>
-        </div>
       </div>
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .animate-spin { animation: spin 0.8s linear infinite; }
-      `}</style>
     </section>
   );
 };
 
 // ============================================================================
-// App
+// Section 4 — ModelScope CTA Banner (prominent!)
 // ============================================================================
-const App = () => {
+const ModelScopeBanner = () => (
+  <section className="relative bg-black py-16">
+    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/20 via-transparent to-purple-900/20" />
+    <div className="relative z-10 px-8 md:px-16 lg:px-20">
+      <div className="liquid-glass-strong rounded-[2rem] p-8 md:p-12 text-center max-w-3xl mx-auto glow-pulse">
+        <p className="text-sm font-body text-white/50 mb-2 tracking-widest uppercase">// 在线体验 · Live Demo</p>
+        <h2 className="font-heading italic text-white text-4xl md:text-5xl lg:text-6xl tracking-[-2px] leading-[1.05] mb-4">
+          无需安装，立刻试用
+        </h2>
+        <p className="text-sm text-white/50 font-body italic mb-2">No installation required — try it now</p>
+
+        <div className="liquid-glass rounded-2xl p-5 mb-6 text-left max-w-lg mx-auto">
+          <p className="text-xs text-white/30 font-body mb-1 tracking-widest uppercase">ModelScope 魔搭社区 · 永久免费</p>
+          <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+            className="text-base md:text-lg text-white font-mono break-all hover:text-indigo-300 transition-colors">
+            https://modelscope.cn/studios/BellZhu/protein-ss
+          </a>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          {[
+            { zh: '二级结构预测', en: '2nd Structure' },
+            { zh: 'EC 酶分类', en: 'EC Classification' },
+            { zh: '突变效应', en: 'Mutation Effect' },
+            { zh: '完全免费', en: '100% Free' },
+            { zh: '无需注册', en: 'No Login' },
+          ].map(({ zh, en }) => (
+            <span key={zh} className="liquid-glass rounded-full px-4 py-1.5 text-xs font-body text-white/80">
+              {zh} <span className="text-white/25 italic ml-0.5">{en}</span>
+            </span>
+          ))}
+        </div>
+
+        <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+          className="inline-flex items-center gap-2 mt-8 bg-white text-black rounded-full px-8 py-3.5 text-base font-semibold font-body hover:bg-white/90 transition-all duration-200 group">
+          🧬 立即体验 · Launch Demo
+          <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        </a>
+      </div>
+    </div>
+  </section>
+);
+
+// ============================================================================
+// Section 5 — Getting Started (双语: Clone, pip, Claude Code skill)
+// ============================================================================
+const GettingStarted = () => {
+  const [activeStep, setActiveStep] = useState(0);
+
+  const steps = [
+    {
+      icon: <DownloadIcon />, num: '01',
+      zhTitle: '克隆项目', enTitle: 'Clone the Repository',
+      zhDesc: '将项目克隆到本地计算机。',
+      enDesc: 'Clone the project to your local machine.',
+      code: `git clone https://github.com/jiabeizhu547-tech/Bell-bio-ai.git\ncd Bell-bio-ai`,
+      noteZh: '确保已安装 Git。Windows 用户推荐使用 Git Bash。',
+      noteEn: 'Make sure Git is installed. Windows users: use Git Bash.',
+    },
+    {
+      icon: <TerminalIcon />, num: '02',
+      zhTitle: '安装 Python 依赖', enTitle: 'Install Python Dependencies',
+      zhDesc: '使用 pip 安装所有必需的 Python 包。推荐使用虚拟环境。',
+      enDesc: 'Install all required Python packages via pip. Virtual environment recommended.',
+      code: `# 创建并激活虚拟环境（推荐）\npython -m venv .venv\n.venv\\Scripts\\activate   # Windows\n# source .venv/bin/activate  # macOS/Linux\n\n# 安装依赖\npip install -r requirements.txt`,
+      noteZh: '需要 Python 3.9+。首次运行时 ESM-2 模型会自动从 HuggingFace 下载（约 5 分钟）。',
+      noteEn: 'Requires Python 3.9+. ESM-2 model auto-downloads from HuggingFace on first run (~5 min).',
+    },
+    {
+      icon: <ClaudeIcon />, num: '03',
+      zhTitle: '安装为 Claude Code 技能', enTitle: 'Install as Claude Code Skill',
+      zhDesc: '将 Protein AI 配置为 Claude Code 技能，在对话中直接调用蛋白质分析功能。',
+      enDesc: 'Register Protein AI as a Claude Code skill to invoke protein analysis directly in conversations.',
+      code: `# 方法一：创建项目级技能文件（推荐）\nmkdir -p .claude/skills\ncat > .claude/skills/protein-ai.md << 'EOF'\n---\nname: protein-ai\ndescription: >-\n  Predict protein secondary structure,\n  EC enzyme classification, and mutation\n  effects from amino acid sequences.\n  Invoke when the user asks about protein\n  analysis, structure prediction, enzyme\n  classification, or mutation scoring.\nallowed-tools: [Bash, Read, Write]\n---\n\n# Protein AI Skill\n\n## What it does\n- **二级结构预测**: 输入氨基酸序列 → Q3 89.8%\n- **EC 酶分类**: 输入序列 → 7 类酶功能\n- **突变效应**: 输入突变 → LLR 致病性打分\n\n## How to use\n1. 确保已安装依赖: \`pip install -r requirements.txt\`\n2. 启动推理服务: \`python server.py\`\n3. 或直接运行推理脚本:\n   - \`python inference.py\` (二级结构)\n   - \`python protein_function/train_ec_classifier.py\` (EC)\n\n## ModelScope 在线 Demo\nhttps://modelscope.cn/studios/BellZhu/protein-ss\nEOF\n\n# 方法二：设为用户级技能（所有项目可用）\n# 将上述文件放到 ~/.claude/skills/protein-ai.md`,
+      noteZh: '安装为技能后，在 Claude Code 中输入 /protein-ai 即可调用。或直接说"用 Protein AI 分析这段序列"。',
+      noteEn: 'After installing, invoke with /protein-ai in Claude Code, or say "Analyze this sequence with Protein AI".',
+    },
+    {
+      icon: <ZapIcon />, num: '04',
+      zhTitle: '启动并使用', enTitle: 'Launch and Use',
+      zhDesc: '启动本地服务或直接访问在线 Demo。',
+      enDesc: 'Start the local server or visit the online demo.',
+      code: `# 启动 Gradio Web 应用（本地）\npython app.py\n# → 打开浏览器访问 http://localhost:7860\n\n# 或启动 API 后端 + 前端\npython server.py\n# → 打开 index.html（或用 Live Server）\n\n# 或直接访问在线 Demo（无需安装）\n# → https://modelscope.cn/studios/BellZhu/protein-ss`,
+      noteZh: 'Gradio 应用会自动在浏览器中打开。ModelScope 在线版永久免费，无需任何配置。',
+      noteEn: 'The Gradio app auto-opens in your browser. The ModelScope online version is permanently free with zero setup.',
+    },
+  ];
+
+  const stepData = steps[activeStep];
+
   return (
-    <main>
-      <Hero />
-      <Capabilities />
-      <AppSection />
-    </main>
+    <section id="start" className="relative min-h-screen bg-black py-24">
+      <FadingVideo
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
+        className="absolute inset-0 w-full h-full object-cover z-0" style={{}}
+      />
+      <div className="relative z-10 px-8 md:px-16 lg:px-20">
+        <SectionHeading
+          eyebrow="// 快速开始 / Getting Started"
+          title="四步上手"
+          subtitle="Four steps to get started — or skip directly to the online demo."
+        />
+
+        <div className="flex flex-col lg:flex-row gap-6 max-w-5xl">
+          {/* Left: Step Navigation */}
+          <div className="flex flex-col gap-2 min-w-[240px]">
+            {steps.map((s, i) => (
+              <button key={i} onClick={() => setActiveStep(i)}
+                className={`text-left px-5 py-4 rounded-[1rem] transition-all duration-200 flex items-center gap-4 ${
+                  activeStep === i
+                    ? 'liquid-glass-strong text-white'
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
+                }`}>
+                <span className={`font-heading italic text-2xl tracking-[-1px] w-8 ${activeStep === i ? 'text-white' : 'text-white/25'}`}>{s.num}</span>
+                <div>
+                  <div className="font-body font-medium text-sm leading-tight">{s.zhTitle}</div>
+                  <div className="text-[10px] text-white/25 italic">{s.enTitle}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Right: Step Detail */}
+          <div className="flex-1 liquid-glass rounded-[1.5rem] p-6 md:p-8 min-h-[420px]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="liquid-glass w-10 h-10 rounded-[0.75rem] flex items-center justify-center text-white">{stepData.icon}</div>
+              <div>
+                <h3 className="font-body font-semibold text-white text-lg">{stepData.zhTitle}</h3>
+                <p className="text-xs text-white/30 font-body italic">{stepData.enTitle}</p>
+              </div>
+            </div>
+            <p className="text-sm text-white/75 font-body mb-1">{stepData.zhDesc}</p>
+            <p className="text-xs text-white/35 font-body italic mb-5">{stepData.enDesc}</p>
+            <div className="code-block mb-4" dangerouslySetInnerHTML={{ __html:
+              stepData.code
+                .replace(/^# (.+)$/gm, '<span class="cmt"># $1</span>')
+                .replace(/^(git |cd |mkdir |cat |python |pip |curl )/gm, '<span class="cmd">$1</span>')
+                .replace(/(https?:\/\/\S+)/g, '<span class="str">$1</span>')
+            }} />
+            <div className="liquid-glass rounded-xl p-4">
+              <p className="text-xs text-white/60 font-body leading-relaxed">{stepData.noteZh}</p>
+              <p className="text-[10px] text-white/25 font-body italic mt-1">{stepData.noteEn}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };
 
-// Mount
+// ============================================================================
+// Section 6 — Benchmark (quick stats table, bilingual)
+// ============================================================================
+const Benchmark = () => (
+  <section className="relative bg-black py-24">
+    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-950/10 to-transparent" />
+    <div className="relative z-10 px-8 md:px-16 lg:px-20">
+      <SectionHeading
+        eyebrow="// 性能基准 / Benchmark"
+        title="模型性能一览"
+        subtitle="Model performance at a glance. All metrics on held-out test set."
+      />
+      <div className="max-w-3xl mx-auto liquid-glass rounded-[1.5rem] p-6 md:p-8 overflow-x-auto">
+        <table className="w-full text-sm text-white/90 font-body">
+          <thead>
+            <tr className="border-b border-white/[0.06]">
+              <th className="text-left py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">模型 Model</th>
+              <th className="text-center py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">Q3 准确率</th>
+              <th className="text-center py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">H F1</th>
+              <th className="text-center py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">E F1</th>
+              <th className="text-center py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">C F1</th>
+              <th className="text-center py-3 px-4 text-xs text-white/40 font-medium uppercase tracking-wider">大小 Size</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { model: 'V1 (CNN+BiLSTM)', q3: '85.5%', h: '0.887', e: '0.780', c: '0.854', size: '8.6 MB' },
+              { model: 'ESM-2 Fine-tuned', q3: '89.2%', h: '0.925', e: '0.846', c: '0.879', size: '29 MB' },
+              { model: 'Ensemble + Bio Smooth', q3: '89.8%', h: '0.930', e: '0.850', c: '0.885', size: '38 MB', highlight: true },
+            ].map((row, i) => (
+              <tr key={i} className={`border-b border-white/[0.04] ${row.highlight ? 'bg-white/[0.02]' : ''}`}>
+                <td className="py-3 px-4 font-medium flex items-center gap-2">
+                  {row.highlight && <span className="text-yellow-400 text-xs">★</span>}
+                  {row.model}
+                  {row.highlight && <span className="text-[10px] text-white/25 font-body ml-1">最佳 Best</span>}
+                </td>
+                <td className="py-3 px-4 text-center font-mono text-sm">{row.q3}</td>
+                <td className="py-3 px-4 text-center font-mono text-xs text-white/60">{row.h}</td>
+                <td className="py-3 px-4 text-center font-mono text-xs text-white/60">{row.e}</td>
+                <td className="py-3 px-4 text-center font-mono text-xs text-white/60">{row.c}</td>
+                <td className="py-3 px-4 text-center font-mono text-xs text-white/40">{row.size}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-4 text-[11px] text-white/30 font-body italic text-center">
+          ESM-2 相对 V1 提升 +3.8% Q3。集成 + 生物规则平滑再提升 +0.52%。| ESM-2 improves over V1 by +3.8% Q3. Ensemble + bio-smoothing adds +0.52%.
+        </p>
+      </div>
+    </div>
+  </section>
+);
+
+// ============================================================================
+// Section 7 — Footer
+// ============================================================================
+const Footer = () => (
+  <footer className="relative bg-black py-16 border-t border-white/[0.04]">
+    <div className="relative z-10 px-8 md:px-16 lg:px-20">
+      <div className="flex flex-col md:flex-row items-start justify-between gap-10 max-w-4xl mx-auto">
+        {/* Left */}
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🧬</span>
+            <span className="font-heading italic text-white text-2xl tracking-[-1px]">Protein AI</span>
+          </div>
+          <p className="text-sm text-white/50 font-body max-w-md leading-relaxed">
+            基于 ESM-2 的蛋白质序列智能分析工具。开源 · 免费 · 高精度。
+          </p>
+          <p className="text-xs text-white/25 font-body italic mt-1">
+            ESM-2 powered protein sequence analysis. Open source · Free · High accuracy.
+          </p>
+        </div>
+
+        {/* Middle: Links */}
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-white/30 font-body uppercase tracking-widest mb-1">链接 Links</p>
+          <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
+            className="text-sm text-white/70 font-body hover:text-white transition-colors flex items-center gap-2">
+            🚀 ModelScope 在线 Demo <ArrowUpRight className="w-3 h-3" />
+          </a>
+          <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener"
+            className="text-sm text-white/70 font-body hover:text-white transition-colors flex items-center gap-2">
+            <GithubIcon /> GitHub 仓库
+          </a>
+          <a href="#start"
+            className="text-sm text-white/70 font-body hover:text-white transition-colors flex items-center gap-2">
+            📖 安装指南
+          </a>
+        </div>
+
+        {/* Right: Author */}
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-white/30 font-body uppercase tracking-widest mb-1">作者 Author</p>
+          <p className="text-sm text-white/70 font-body">朱家贝 Bell Zhu</p>
+          <p className="text-xs text-white/30 font-body">生物信息学 × 深度学习</p>
+          <p className="text-xs text-white/30 font-body">Bioinformatics × Deep Learning</p>
+          <p className="text-xs text-white/20 font-body mt-2">© 2026 Protein AI · MIT License</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+// ============================================================================
+// App — Mount
+// ============================================================================
+const App = () => (
+  <main>
+    <Hero />
+    <WhyNeed />
+    <Capabilities />
+    <ModelScopeBanner />
+    <GettingStarted />
+    <Benchmark />
+    <Footer />
+  </main>
+);
+
 try {
   const root = ReactDOM.createRoot(document.getElementById('root'));
   root.render(<App />);
-  console.log('App mounted successfully');
+  console.log('Protein AI — App mounted');
 } catch (e) {
   console.error('Mount failed:', e);
-  document.getElementById('root').innerHTML = '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Error: ' + e.message + '</div>';
+  document.getElementById('root').innerHTML =
+    '<div style="color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">Error: ' + e.message + '</div>';
 }
 </script>
 </body>
