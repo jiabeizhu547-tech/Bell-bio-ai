@@ -12,7 +12,7 @@
       extend: {
         fontFamily: {
           heading: ['"Instrument Serif"', 'serif'],
-          body: ['"Barlow"', 'sans-serif'],
+          body: ['"Barlow"', '"Noto Sans SC"', '"Microsoft YaHei"', '"PingFang SC"', 'sans-serif'],
         },
         borderRadius: { DEFAULT: '9999px' },
       },
@@ -21,14 +21,14 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Barlow:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
     background: #000;
     color: #fff;
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Barlow', 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -100,7 +100,7 @@
   .glow-pulse { animation: glowPulse 2s ease-in-out infinite; }
 
   /* === Bilingual text helpers === */
-  .lang-zh { font-family: 'Barlow', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  .lang-zh { font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', sans-serif; }
   .lang-en { font-family: 'Barlow', sans-serif; color: rgba(255,255,255,0.45); font-style: italic; }
 </style>
 </head>
