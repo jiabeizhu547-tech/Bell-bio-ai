@@ -22,31 +22,31 @@ import matplotlib.patches as patches
 import gradio as gr
 
 # ============================================================================
-# Theme constants
+# Theme constants — light / standard
 # ============================================================================
-BG = "#08080a"
-SURFACE = "rgba(255,255,255,0.03)"
-BORDER = "rgba(255,255,255,0.08)"
-BORDER_STRONG = "rgba(255,255,255,0.12)"
-TEXT_PRIMARY = "#f5f5f5"
-TEXT_SECONDARY = "rgba(255,255,255,0.55)"
-TEXT_MUTED = "rgba(255,255,255,0.35)"
+BG = "#ffffff"
+SURFACE = "#f8f9fa"
+BORDER = "#dee2e6"
+BORDER_STRONG = "#ced4da"
+TEXT_PRIMARY = "#212529"
+TEXT_SECONDARY = "#6c757d"
+TEXT_MUTED = "#adb5bd"
 
-MPL_TEXT = "#8c8c8c"
-MPL_TEXT_BRIGHT = "#f5f5f5"
-MPL_SURFACE = "#0d0d0f"
-MPL_BORDER = "#1a1a1c"
-MPL_GRID = "#111113"
-MPL_DIM_WHITE = "#2a2a2c"
-MPL_DIM_RED = "#4a1e1e"
-MPL_PALE_RED = "#3a1818"
-MPL_NEUTRAL = "#353538"
+MPL_TEXT = "#495057"
+MPL_TEXT_BRIGHT = "#212529"
+MPL_SURFACE = "#ffffff"
+MPL_BORDER = "#dee2e6"
+MPL_GRID = "#f1f3f5"
+MPL_DIM_WHITE = "#e9ecef"
+MPL_DIM_RED = "#f8d7da"
+MPL_PALE_RED = "#f8d7da"
+MPL_NEUTRAL = "#ced4da"
 
-SS_COLORS = {"H": "#FF6B6B", "E": "#60A5FA", "C": "#FBBF24"}
-SS_BG_COLORS = {"H": "rgba(255,107,107,0.15)", "E": "rgba(96,165,250,0.15)", "C": "rgba(251,191,36,0.15)"}
+SS_COLORS = {"H": "#DC3545", "E": "#0D6EFD", "C": "#FFC107"}
+SS_BG_COLORS = {"H": "rgba(220,53,69,0.12)", "E": "rgba(13,110,253,0.12)", "C": "rgba(255,193,7,0.12)"}
 SS_NAMES = {"H": "alpha-helix", "E": "beta-sheet", "C": "coil"}
 
-EC_COLORS = ["#EF4444", "#F59E0B", "#10B981", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4"]
+EC_COLORS = ["#DC3545", "#FD7E14", "#198754", "#0D6EFD", "#6F42C1", "#D63384", "#0DCAF0"]
 EC_ICONS = ["🔴", "🟠", "🟢", "🔵", "🟣", "🩷", "🩵"]
 
 # ---- Output directory ----
@@ -69,7 +69,7 @@ def _get_inference():
     return _inference
 
 # ============================================================================
-# Plot builders
+# Plot builders — light theme
 # ============================================================================
 
 def _build_ss_plot(seq, ss, confidences, counts, pct):
@@ -108,8 +108,8 @@ def _build_ss_plot(seq, ss, confidences, counts, pct):
 
     ax3 = fig.add_subplot(2, 2, 4)
     ax3.set_facecolor(MPL_SURFACE)
-    ax3.hist(confidences, bins=25, color="#818CF8", edgecolor=BG, alpha=0.85)
-    ax3.axvline(x=np.mean(confidences), color="#FCA5A5", linestyle="--", linewidth=2.5,
+    ax3.hist(confidences, bins=25, color="#6F42C1", edgecolor=MPL_BORDER, alpha=0.7)
+    ax3.axvline(x=np.mean(confidences), color="#DC3545", linestyle="--", linewidth=2.5,
                 label=f"Mean: {np.mean(confidences):.3f}")
     ax3.set_xlabel("Confidence", fontweight="500"); ax3.set_ylabel("Count", fontweight="500")
     ax3.set_title("Confidence Distribution", fontweight="600", fontsize=13, pad=10, color=TEXT_PRIMARY)
@@ -164,7 +164,7 @@ def _build_mutation_plot(batch_result):
     )
     variants = [r["variant"] for r in results]
     scores = [r["score"] for r in results]
-    bar_colors = ["#FF6B6B" if s < -1 else "#FBBF24" if s < 0 else "#34D399" for s in scores]
+    bar_colors = ["#DC3545" if s < -1 else "#FFC107" if s < 0 else "#198754" for s in scores]
     ax1.set_facecolor(MPL_SURFACE)
     y_pos = range(n)
     ax1.barh(y_pos, scores, color=bar_colors, edgecolor=BG, height=0.6, linewidth=1.5)
@@ -188,11 +188,11 @@ def _build_mutation_plot(batch_result):
     for r in results:
         pred = r["prediction"].lower()
         if "pathogenic" in pred or "致病" in pred:
-            scatter_colors.append("#FF6B6B")
+            scatter_colors.append("#DC3545")
         elif "damaging" in pred or "影响功能" in pred:
-            scatter_colors.append("#FBBF24")
+            scatter_colors.append("#FFC107")
         elif "benign" in pred or "良性" in pred:
-            scatter_colors.append("#34D399")
+            scatter_colors.append("#198754")
         else:
             scatter_colors.append(MPL_NEUTRAL)
     ax2.scatter(scores, disruptions, c=scatter_colors, s=120, edgecolors=BG,
@@ -224,11 +224,11 @@ def _save_plot(fig, prefix):
 def predict_ss(sequence):
     inf = _get_inference()
     if not sequence or not sequence.strip():
-        return None, None, "<div style='color:#FF6B6B;'>请输入氨基酸序列</div>"
+        return None, None, "<div style='color:#DC3545;'>请输入氨基酸序列</div>"
     try:
         result = inf['predict_ss'](sequence)
     except Exception as e:
-        return None, None, f"<div style='color:#FF6B6B;'>Error: {e}</div>"
+        return None, None, f"<div style='color:#DC3545;'>Error: {e}</div>"
 
     seq = result["sequence"]; ss = result["structure"]
     pct = result["percentages"]; counts = result["counts"]
@@ -238,14 +238,14 @@ def predict_ss(sequence):
     chars_per_row = 60
     parts = [
         f'<div style="font-family:monospace;font-size:13px;line-height:2.2;'
-        f'background:{SURFACE};border:1px solid {BORDER};border-radius:18px;padding:20px 24px;">'
+        f'background:{SURFACE};border:1px solid {BORDER};border-radius:12px;padding:20px 24px;">'
     ]
     for row_start in range(0, len(seq), chars_per_row):
         chunk_seq = seq[row_start:row_start + chars_per_row]
         chunk_ss = ss[row_start:row_start + chars_per_row]
         parts.append('<div style="display:flex;flex-wrap:wrap;">')
         for j, (aa, s) in enumerate(zip(chunk_seq, chunk_ss)):
-            bg_c = SS_BG_COLORS.get(s, "rgba(255,255,255,0.05)")
+            bg_c = SS_BG_COLORS.get(s, "rgba(0,0,0,0.04)")
             text_c = SS_COLORS.get(s, TEXT_MUTED)
             parts.append(
                 f'<span style="background:{bg_c};color:{text_c};font-weight:700;'
@@ -269,9 +269,9 @@ def predict_ss(sequence):
         color = SS_COLORS[ss_type]
         cards.append(
             f'<div style="flex:1;min-width:120px;background:{SURFACE};border:1px solid {BORDER};'
-            f'border-radius:18px;padding:16px 18px;text-align:center;">'
-            f'<span style="background:{color};color:#08080a;font-weight:800;font-size:20px;'
-            f'width:42px;height:42px;border-radius:12px;display:inline-flex;align-items:center;'
+            f'border-radius:12px;padding:16px 18px;text-align:center;">'
+            f'<span style="background:{color};color:white;font-weight:800;font-size:20px;'
+            f'width:42px;height:42px;border-radius:10px;display:inline-flex;align-items:center;'
             f'justify-content:center;margin-bottom:8px;">{ss_type}</span>'
             f'<div style="font-weight:600;font-size:14px;color:{TEXT_PRIMARY};">{full_name}</div>'
             f'<div style="font-size:11px;color:{TEXT_SECONDARY};">{desc}</div>'
@@ -280,7 +280,7 @@ def predict_ss(sequence):
         )
     summary = (
         f'<div style="display:flex;gap:20px;margin-top:12px;background:{SURFACE};'
-        f'border:1px solid {BORDER};border-radius:14px;padding:12px 24px;justify-content:center;">'
+        f'border:1px solid {BORDER};border-radius:10px;padding:12px 24px;justify-content:center;">'
         f'<span style="color:{TEXT_SECONDARY};">Length: <b style="color:{TEXT_PRIMARY};">{result["length"]} aa</b></span>'
         f'<span style="color:{TEXT_SECONDARY};">Avg Confidence: <b style="color:{TEXT_PRIMARY};">{avg_conf:.3f}</b></span></div>'
     )
@@ -294,11 +294,11 @@ def predict_ss(sequence):
 def predict_ec(sequence):
     inf = _get_inference()
     if not sequence or not sequence.strip():
-        return None, "<div style='color:#FF6B6B;'>请输入氨基酸序列</div>"
+        return None, "<div style='color:#DC3545;'>请输入氨基酸序列</div>"
     try:
         result = inf['predict_ec'](sequence)
     except Exception as e:
-        return None, f"<div style='color:#FF6B6B;'>Error: {e}</div>"
+        return None, f"<div style='color:#DC3545;'>Error: {e}</div>"
 
     top = result["all_results"]
     bars = []
@@ -308,23 +308,23 @@ def predict_ec(sequence):
         ec_color = EC_COLORS[int(item["ec_class"]) - 1]
         bars.append(
             f'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;'
-            f'{"background:rgba(129,140,248,0.08);border-radius:14px;padding:8px 12px;" if is_top else ""}">'
+            f'{"background:#e7f1ff;border-radius:10px;padding:8px 12px;" if is_top else ""}">'
             f'<span style="font-weight:600;font-size:12px;min-width:55px;color:{TEXT_PRIMARY};">'
             f'{EC_ICONS[i]} EC {item["ec_class"]}</span>'
             f'<span style="font-size:11px;min-width:130px;color:{TEXT_SECONDARY};">{item["name"]}</span>'
-            f'<div style="flex:1;background:rgba(255,255,255,0.06);border-radius:8px;height:20px;overflow:hidden;">'
+            f'<div style="flex:1;background:#e9ecef;border-radius:8px;height:20px;overflow:hidden;">'
             f'<div style="background:{ec_color};width:{int(pct_val)}%;height:100%;'
             f'border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;">'
-            f'<span style="color:#08080a;font-size:10px;font-weight:700;">{pct_val:.1f}%</span></div></div></div>'
+            f'<span style="color:white;font-size:10px;font-weight:700;">{pct_val:.1f}%</span></div></div></div>'
         )
     html = (
-        f'<div style="background:{SURFACE};border:1px solid {BORDER_STRONG};border-radius:18px;padding:22px 26px;">'
+        f'<div style="background:{SURFACE};border:1px solid {BORDER_STRONG};border-radius:12px;padding:22px 26px;">'
         f'<div style="text-align:center;margin-bottom:16px;">'
         f'<span style="font-size:48px;">{EC_ICONS[0]}</span><br>'
         f'<span style="font-weight:700;font-size:20px;color:{TEXT_PRIMARY};">'
         f'EC {result["predicted_class"]}: {result["predicted_name"]}</span><br>'
         f'<span style="font-size:12px;color:{TEXT_SECONDARY};">{result["description"]}</span><br>'
-        f'<span style="font-weight:600;font-size:14px;color:#818CF8;">Confidence: {result["confidence"]:.1%}</span>'
+        f'<span style="font-weight:600;font-size:14px;color:#6F42C1;">Confidence: {result["confidence"]:.1%}</span>'
         f'</div>' + "".join(bars) + '</div>'
     )
 
@@ -336,15 +336,15 @@ def predict_ec(sequence):
 def predict_mutation(sequence, mutations_str):
     inf = _get_inference()
     if not sequence or not sequence.strip():
-        return None, "<div style='color:#FF6B6B;'>请输入氨基酸序列</div>"
+        return None, "<div style='color:#DC3545;'>请输入氨基酸序列</div>"
     if not mutations_str or not mutations_str.strip():
-        return None, "<div style='color:#FF6B6B;'>请输入突变，如 L22P,D7A</div>"
+        return None, "<div style='color:#DC3545;'>请输入突变，如 L22P,D7A</div>"
 
     mut_list = [m.strip() for m in mutations_str.split(",") if m.strip()]
     try:
         batch_result = inf['predict_mutations'](sequence, mut_list)
     except Exception as e:
-        return None, f"<div style='color:#FF6B6B;'>Error: {e}</div>"
+        return None, f"<div style='color:#DC3545;'>Error: {e}</div>"
 
     results = batch_result["results"]; errors = batch_result["errors"]
     n = len(results)
@@ -357,19 +357,19 @@ def predict_mutation(sequence, mutations_str):
     summary_html = (
         f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">'
         f'<div style="flex:1;min-width:100px;background:{SURFACE};border:1px solid {BORDER};'
-        f'border-radius:16px;padding:12px 14px;text-align:center;">'
-        f'<div style="font-size:24px;font-weight:800;color:#FF6B6B;">{pathogenic}</div>'
+        f'border-radius:12px;padding:12px 14px;text-align:center;">'
+        f'<div style="font-size:24px;font-weight:800;color:#DC3545;">{pathogenic}</div>'
         f'<div style="font-size:10px;color:{TEXT_SECONDARY};">Likely Pathogenic</div></div>'
         f'<div style="flex:1;min-width:100px;background:{SURFACE};border:1px solid {BORDER};'
-        f'border-radius:16px;padding:12px 14px;text-align:center;">'
-        f'<div style="font-size:24px;font-weight:800;color:#FBBF24;">{damaging}</div>'
+        f'border-radius:12px;padding:12px 14px;text-align:center;">'
+        f'<div style="font-size:24px;font-weight:800;color:#FD7E14;">{damaging}</div>'
         f'<div style="font-size:10px;color:{TEXT_SECONDARY};">Possibly Damaging</div></div>'
         f'<div style="flex:1;min-width:100px;background:{SURFACE};border:1px solid {BORDER};'
-        f'border-radius:16px;padding:12px 14px;text-align:center;">'
-        f'<div style="font-size:24px;font-weight:800;color:#34D399;">{benign}</div>'
+        f'border-radius:12px;padding:12px 14px;text-align:center;">'
+        f'<div style="font-size:24px;font-weight:800;color:#198754;">{benign}</div>'
         f'<div style="font-size:10px;color:{TEXT_SECONDARY};">Likely Benign</div></div>'
         f'<div style="flex:1;min-width:100px;background:{SURFACE};border:1px solid {BORDER};'
-        f'border-radius:16px;padding:12px 14px;text-align:center;">'
+        f'border-radius:12px;padding:12px 14px;text-align:center;">'
         f'<div style="font-size:24px;font-weight:800;color:{TEXT_MUTED};">{uncertain}</div>'
         f'<div style="font-size:10px;color:{TEXT_SECONDARY};">Uncertain</div></div></div>'
         f'<div style="margin-bottom:14px;font-size:12px;color:{TEXT_SECONDARY};">Sequence: '
@@ -381,28 +381,28 @@ def predict_mutation(sequence, mutations_str):
     for r in results:
         pred = r["prediction"].lower()
         if "pathogenic" in pred or "致病" in pred:
-            border, badge_color, badge_text = "#FF6B6B", "#FF6B6B", "Pathogenic"
+            border, badge_color, badge_text = "#DC3545", "#DC3545", "Pathogenic"
         elif "damaging" in pred or "影响功能" in pred:
-            border, badge_color, badge_text = "#FBBF24", "#FBBF24", "Damaging"
+            border, badge_color, badge_text = "#FD7E14", "#FD7E14", "Damaging"
         elif "benign" in pred or "良性" in pred:
-            border, badge_color, badge_text = "#34D399", "#34D399", "Benign"
+            border, badge_color, badge_text = "#198754", "#198754", "Benign"
         else:
-            border, badge_color, badge_text = "rgba(255,255,255,0.12)", TEXT_MUTED, "Uncertain"
+            border, badge_color, badge_text = MPL_NEUTRAL, TEXT_MUTED, "Uncertain"
         score = r["score"]
         bar_pos = max(0, min(1, (score + 5) / 7))
-        bar_color = "#FF6B6B" if score < -1 else "#FBBF24" if score < 0 else "#34D399"
+        bar_color = "#DC3545" if score < -1 else "#FFC107" if score < 0 else "#198754"
         result_cards.append(
-            f'<div style="background:{SURFACE};border:1px solid {border};border-radius:16px;'
+            f'<div style="background:{SURFACE};border:1px solid {border};border-radius:12px;'
             f'padding:14px 18px;margin-bottom:6px;">'
             f'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">'
             f'<div><span style="font-weight:700;font-size:15px;color:{TEXT_PRIMARY};">{r["variant"]}</span>'
             f'<span style="color:{TEXT_SECONDARY};font-size:10px;margin-left:6px;">'
-            f'{r["wildtype_aa"]}>{r["mutant_aa"]} @ pos {r["position"]}</span></div>'
-            f'<span style="background:{badge_color};color:#08080a;font-size:10px;font-weight:700;'
+            f'{r["wildtype_aa"]}&gt;{r["mutant_aa"]} @ pos {r["position"]}</span></div>'
+            f'<span style="background:{badge_color};color:white;font-size:10px;font-weight:700;'
             f'padding:3px 10px;border-radius:9999px;">{badge_text}</span></div>'
             f'<div style="display:flex;align-items:center;gap:8px;margin-top:8px;">'
             f'<span style="font-weight:700;font-size:12px;min-width:44px;color:{TEXT_PRIMARY};">LLR: {score:+.2f}</span>'
-            f'<div style="flex:1;background:rgba(255,255,255,0.06);border-radius:6px;height:16px;overflow:hidden;">'
+            f'<div style="flex:1;background:#e9ecef;border-radius:6px;height:16px;overflow:hidden;">'
             f'<div style="background:{bar_color};width:{bar_pos * 100:.0f}%;height:100%;border-radius:6px;"></div></div>'
             f'<span style="font-size:9px;color:{TEXT_MUTED};">Harmful | Beneficial</span></div>'
             f'<div style="display:flex;gap:16px;margin-top:6px;font-size:10px;color:{TEXT_SECONDARY};">'
@@ -416,10 +416,10 @@ def predict_mutation(sequence, mutations_str):
             f'<li><code style="color:{TEXT_PRIMARY};">{e["mutation"]}</code>: {e["error"]}</li>' for e in errors
         )
         error_html = (
-            f'<div style="margin-top:10px;background:rgba(255,107,107,0.08);'
-            f'border:1px solid rgba(255,107,107,0.25);border-radius:14px;padding:12px 18px;">'
-            f'<span style="font-weight:600;color:#FF6B6B;">Parse Errors</span>'
-            f'<ul style="margin:4px 0 0 16px;font-size:12px;color:{TEXT_SECONDARY};">{error_items}</ul></div>'
+            f'<div style="margin-top:10px;background:#fff3cd;'
+            f'border:1px solid #ffc107;border-radius:10px;padding:12px 18px;">'
+            f'<span style="font-weight:600;color:#856404;">Parse Errors</span>'
+            f'<ul style="margin:4px 0 0 16px;font-size:12px;color:#856404;">{error_items}</ul></div>'
         )
 
     html = summary_html + "".join(result_cards) + error_html
@@ -429,50 +429,11 @@ def predict_mutation(sequence, mutations_str):
     return plot_path, html
 
 # ============================================================================
-# Gradio UI
+# Gradio UI — standard light theme
 # ============================================================================
 
 css = """
-body, .gradio-container { background: #08080a !important; }
 .gradio-container { max-width: 960px !important; margin: 0 auto !important; }
-h1, h2, h3, label, .tab-nav button { color: #f5f5f5 !important; }
-.tabs { border: none !important; }
-.tab-nav button {
-    background: rgba(255,255,255,0.03) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-radius: 9999px !important;
-    padding: 8px 24px !important;
-    margin: 0 4px !important;
-    transition: all 0.2s !important;
-}
-.tab-nav button.selected {
-    background: rgba(129,140,248,0.15) !important;
-    border-color: rgba(129,140,248,0.4) !important;
-}
-textarea, input[type="text"] {
-    background: rgba(255,255,255,0.04) !important;
-    border: 1px solid rgba(255,255,255,0.12) !important;
-    border-radius: 16px !important;
-    color: #f5f5f5 !important;
-    padding: 12px 16px !important;
-}
-textarea:focus, input[type="text"]:focus {
-    border-color: rgba(129,140,248,0.5) !important;
-    box-shadow: 0 0 0 3px rgba(129,140,248,0.1) !important;
-}
-button.primary {
-    background: rgba(255,255,255,0.06) !important;
-    border: 1px solid rgba(255,255,255,0.2) !important;
-    border-radius: 9999px !important;
-    color: #f5f5f5 !important;
-    padding: 10px 32px !important;
-    font-weight: 600 !important;
-    transition: all 0.2s !important;
-}
-button.primary:hover {
-    background: rgba(129,140,248,0.12) !important;
-    border-color: rgba(129,140,248,0.4) !important;
-}
 footer { display: none !important; }
 """
 
@@ -493,8 +454,8 @@ examples_mut = [
 with gr.Blocks(title="Protein AI — 蛋白质序列智能分析") as demo:
     gr.HTML("""
     <div style="text-align:center;padding:20px 0 10px;">
-        <h1 style="font-size:2.2em;font-weight:700;color:#f5f5f5;margin:0;">🧬 Protein AI</h1>
-        <p style="color:rgba(255,255,255,0.45);font-size:1em;margin-top:4px;">
+        <h1>🧬 Protein AI</h1>
+        <p style="color:#6c757d;font-size:1em;margin-top:4px;">
         蛋白质序列智能分析 · ESM-2 零样本预测
         </p>
     </div>
