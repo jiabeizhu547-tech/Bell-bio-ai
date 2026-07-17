@@ -183,15 +183,14 @@ Register Protein AI as a Claude Code skill to invoke protein analysis with `/pro
 
 ### 方法一：项目级技能（推荐）· Project-level Skill
 
-在项目根目录创建 `.claude/skills/protein-ai.md`：
+在项目根目录执行以下命令创建技能文件：
 
-Create `.claude/skills/protein-ai.md` in your project root:
+Run these commands in your project root to create the skill file:
 
 ```bash
 mkdir -p .claude/skills
-```
 
-```markdown
+cat > .claude/skills/protein-ai.md << 'SKILL_EOF'
 ---
 name: protein-ai
 description: >-
@@ -215,21 +214,21 @@ allowed-tools: [Bash, Read, Write]
 ## 使用方式 · How to use
 
 ### 本地推理 · Local Inference
-```bash
-# 确保已安装依赖
-pip install -r requirements.txt
 
-# 二级结构预测
-python inference.py --sequence "MKVLILACLVALALACTVQ..."
+    # 确保已安装依赖
+    pip install -r requirements.txt
 
-# EC 酶分类
-python -c "
-from protein_function.train_ec_classifier import predict
-print(predict('MSKVQVTGSVLKAAAVDAVAAAGYPVEITGDLKRLGFKGVFIEK'))
-"
-```
+    # 二级结构预测
+    python inference.py --sequence "MKVLILACLVALALACTVQ..."
+
+    # EC 酶分类
+    python -c "
+    from protein_function.train_ec_classifier import predict
+    print(predict('MSKVQVTGSVLKAAAVDAVAAAGYPVEITGDLKRLGFKGVFIEK'))
+    "
 
 ### 在线 Demo · Online Demo
+
 无需安装：https://modelscope.cn/studios/BellZhu/protein-ss
 
 No installation: https://modelscope.cn/studios/BellZhu/protein-ss
@@ -252,13 +251,24 @@ No installation: https://modelscope.cn/studios/BellZhu/protein-ss
 | ESM-2 | Transformer 6L | 89.2% | 29 MB |
 | Ensemble | ESM-2 + V1 + Bio | 89.8% | 38 MB |
 | EC 分类器 | ESM-2 embed + MLP | 87.3% | 266 KB |
+SKILL_EOF
 ```
+
+> 💡 也可以手动创建 `.claude/skills/protein-ai.md`，把上面 `---` 到 `SKILL_EOF` 之间的内容复制进去。
 
 ### 方法二：用户级技能（所有项目可用）· User-level Skill
 
-将上述文件放到 `~/.claude/skills/protein-ai.md`，所有项目均可使用 `/protein-ai`。
+将上述文件复制到 `~/.claude/skills/protein-ai.md`，所有项目均可使用 `/protein-ai`。
 
-Place the file at `~/.claude/skills/protein-ai.md` to make it available across all projects.
+Copy the file to `~/.claude/skills/protein-ai.md` to make it available across all projects.
+
+```bash
+# Windows (PowerShell)
+Copy-Item .claude/skills/protein-ai.md $env:USERPROFILE\.claude\skills\protein-ai.md
+
+# macOS / Linux
+cp .claude/skills/protein-ai.md ~/.claude/skills/protein-ai.md
+```
 
 ### 使用 · Usage
 
