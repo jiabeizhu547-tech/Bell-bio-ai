@@ -1,7 +1,7 @@
 {
   "_name_or_path": "/tmp/facebook/esm2_t6_8M_UR50D",
   "architectures": [
-    "EsmForMaskedLM"
+    "EsmModel"
   ],
   "attention_probs_dropout_prob": 0.0,
   "classifier_dropout": null,

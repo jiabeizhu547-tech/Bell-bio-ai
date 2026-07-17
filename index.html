@@ -298,7 +298,6 @@ const Hero = () => {
               { label: '首页', href: '#hero' },
               { label: '为什么需要', href: '#why' },
               { label: '核心功能', href: '#capabilities' },
-              { label: '快速开始', href: '#start' },
             ].map(({ label, href }) => (
               <a key={label} href={href} className="px-3 py-2 text-sm font-medium text-white/90 font-body hover:text-white transition-colors rounded-full">{label}</a>
             ))}
@@ -344,9 +343,6 @@ const Hero = () => {
             <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai" target="_blank" rel="noopener"
               className="liquid-glass rounded-full px-5 py-2.5 text-sm font-medium text-white flex items-center gap-2 hover:bg-white/[0.02] transition-colors">
               <GithubIcon /> GitHub 开源
-            </a>
-            <a href="#start" className="text-sm font-medium text-white font-body flex items-center gap-2 hover:text-white/80 transition-colors">
-              <DownloadIcon /> 本地安装
             </a>
           </motion.div>
 
@@ -539,160 +535,7 @@ const Capabilities = () => {
 };
 
 // ============================================================================
-// Section 4 — ModelScope CTA Banner (prominent!)
-// ============================================================================
-const ModelScopeBanner = () => (
-  <section className="relative bg-black py-16">
-    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/20 via-transparent to-purple-900/20" />
-    <div className="relative z-10 px-8 md:px-16 lg:px-20">
-      <div className="liquid-glass-strong rounded-[2rem] p-8 md:p-12 text-center max-w-3xl mx-auto glow-pulse">
-        <p className="text-sm font-body text-white/50 mb-2 tracking-widest uppercase">// 在线体验 · Live Demo</p>
-        <h2 className="font-heading italic text-white text-4xl md:text-5xl lg:text-6xl tracking-[-2px] leading-[1.05] mb-4">
-          无需安装，立刻试用
-        </h2>
-        <p className="text-sm text-white/50 font-body italic mb-2">No installation required — try it now</p>
-
-        <div className="liquid-glass rounded-2xl p-5 mb-6 text-left max-w-lg mx-auto">
-          <p className="text-xs text-white/30 font-body mb-1 tracking-widest uppercase">ModelScope 魔搭社区 · 永久免费</p>
-          <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
-            className="text-base md:text-lg text-white font-mono break-all hover:text-indigo-300 transition-colors">
-            https://modelscope.cn/studios/BellZhu/protein-ss
-          </a>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          {[
-            { zh: '二级结构预测', en: '2nd Structure' },
-            { zh: 'EC 酶分类', en: 'EC Classification' },
-            { zh: '突变效应', en: 'Mutation Effect' },
-            { zh: '完全免费', en: '100% Free' },
-            { zh: '无需注册', en: 'No Login' },
-          ].map(({ zh, en }) => (
-            <span key={zh} className="liquid-glass rounded-full px-4 py-1.5 text-xs font-body text-white/80">
-              {zh} <span className="text-white/25 italic ml-0.5">{en}</span>
-            </span>
-          ))}
-        </div>
-
-        <a href="https://modelscope.cn/studios/BellZhu/protein-ss" target="_blank" rel="noopener"
-          className="inline-flex items-center gap-2 mt-8 bg-white text-black rounded-full px-8 py-3.5 text-base font-semibold font-body hover:bg-white/90 transition-all duration-200 group">
-          🧬 立即体验 · Launch Demo
-          <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-        </a>
-      </div>
-    </div>
-  </section>
-);
-
-// ============================================================================
-// Section 5 — Getting Started (双语: Clone, pip, Claude Code skill)
-// ============================================================================
-const GettingStarted = () => {
-  const [activeStep, setActiveStep] = useState(0);
-
-  const steps = [
-    {
-      icon: <DownloadIcon />, num: '01',
-      zhTitle: '克隆项目', enTitle: 'Clone the Repository',
-      zhDesc: '将项目克隆到本地计算机。',
-      enDesc: 'Clone the project to your local machine.',
-      code: `git clone https://github.com/jiabeizhu547-tech/Bell-bio-ai.git\ncd Bell-bio-ai`,
-      noteZh: '确保已安装 Git。Windows 用户推荐使用 Git Bash。',
-      noteEn: 'Make sure Git is installed. Windows users: use Git Bash.',
-    },
-    {
-      icon: <TerminalIcon />, num: '02',
-      zhTitle: '安装 Python 依赖', enTitle: 'Install Python Dependencies',
-      zhDesc: '使用 pip 安装所有必需的 Python 包。推荐使用虚拟环境。',
-      enDesc: 'Install all required Python packages via pip. Virtual environment recommended.',
-      code: `# 创建并激活虚拟环境（推荐）\npython -m venv .venv\n.venv\\Scripts\\activate   # Windows\n# source .venv/bin/activate  # macOS/Linux\n\n# 安装依赖\npip install -r requirements.txt`,
-      noteZh: '需要 Python 3.9+。首次运行时 ESM-2 模型会自动从 HuggingFace 下载（约 5 分钟）。',
-      noteEn: 'Requires Python 3.9+. ESM-2 model auto-downloads from HuggingFace on first run (~5 min).',
-    },
-    {
-      icon: <ClaudeIcon />, num: '03',
-      zhTitle: '安装为 Claude Code 技能', enTitle: 'Install as Claude Code Skill',
-      zhDesc: '将 Protein AI 配置为 Claude Code 技能，在对话中直接调用蛋白质分析功能。',
-      enDesc: 'Register Protein AI as a Claude Code skill to invoke protein analysis directly in conversations.',
-      code: `# 方法一：创建项目级技能文件（推荐）\nmkdir -p .claude/skills\ncat > .claude/skills/protein-ai.md << 'EOF'\n---\nname: protein-ai\ndescription: >-\n  Predict protein secondary structure,\n  EC enzyme classification, and mutation\n  effects from amino acid sequences.\n  Invoke when the user asks about protein\n  analysis, structure prediction, enzyme\n  classification, or mutation scoring.\nallowed-tools: [Bash, Read, Write]\n---\n\n# Protein AI Skill\n\n## What it does\n- **二级结构预测**: 输入氨基酸序列 → Q3 89.8%\n- **EC 酶分类**: 输入序列 → 7 类酶功能\n- **突变效应**: 输入突变 → LLR 致病性打分\n\n## How to use\n1. 确保已安装依赖: \`pip install -r requirements.txt\`\n2. 启动推理服务: \`python server.py\`\n3. 或直接运行推理脚本:\n   - \`python inference.py\` (二级结构)\n   - \`python protein_function/train_ec_classifier.py\` (EC)\n\n## ModelScope 在线 Demo\nhttps://modelscope.cn/studios/BellZhu/protein-ss\nEOF\n\n# 方法二：设为用户级技能（所有项目可用）\n# 将上述文件放到 ~/.claude/skills/protein-ai.md`,
-      noteZh: '安装为技能后，在 Claude Code 中输入 /protein-ai 即可调用。或直接说"用 Protein AI 分析这段序列"。',
-      noteEn: 'After installing, invoke with /protein-ai in Claude Code, or say "Analyze this sequence with Protein AI".',
-    },
-    {
-      icon: <ZapIcon />, num: '04',
-      zhTitle: '启动并使用', enTitle: 'Launch and Use',
-      zhDesc: '启动本地服务或直接访问在线 Demo。',
-      enDesc: 'Start the local server or visit the online demo.',
-      code: `# 启动 Gradio Web 应用（本地）\npython app.py\n# → 打开浏览器访问 http://localhost:7860\n\n# 或启动 API 后端 + 前端\npython server.py\n# → 打开 index.html（或用 Live Server）\n\n# 或直接访问在线 Demo（无需安装）\n# → https://modelscope.cn/studios/BellZhu/protein-ss`,
-      noteZh: 'Gradio 应用会自动在浏览器中打开。ModelScope 在线版永久免费，无需任何配置。',
-      noteEn: 'The Gradio app auto-opens in your browser. The ModelScope online version is permanently free with zero setup.',
-    },
-  ];
-
-  const stepData = steps[activeStep];
-
-  return (
-    <section id="start" className="relative min-h-screen bg-black py-24">
-      <FadingVideo
-        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_080021_d598092b-c4c2-4e53-8e46-94cf9064cd50.mp4"
-        className="absolute inset-0 w-full h-full object-cover z-0" style={{}}
-      />
-      <div className="relative z-10 px-8 md:px-16 lg:px-20">
-        <SectionHeading
-          eyebrow="// 快速开始 / Getting Started"
-          title="四步上手"
-          subtitle="Four steps to get started — or skip directly to the online demo."
-        />
-
-        <div className="flex flex-col lg:flex-row gap-6 max-w-5xl">
-          {/* Left: Step Navigation */}
-          <div className="flex flex-col gap-2 min-w-[240px]">
-            {steps.map((s, i) => (
-              <button key={i} onClick={() => setActiveStep(i)}
-                className={`text-left px-5 py-4 rounded-[1rem] transition-all duration-200 flex items-center gap-4 ${
-                  activeStep === i
-                    ? 'liquid-glass-strong text-white'
-                    : 'text-white/40 hover:text-white/70 hover:bg-white/[0.02]'
-                }`}>
-                <span className={`font-heading italic text-2xl tracking-[-1px] w-8 ${activeStep === i ? 'text-white' : 'text-white/25'}`}>{s.num}</span>
-                <div>
-                  <div className="font-body font-medium text-sm leading-tight">{s.zhTitle}</div>
-                  <div className="text-[10px] text-white/25 italic">{s.enTitle}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          {/* Right: Step Detail */}
-          <div className="flex-1 liquid-glass rounded-[1.5rem] p-6 md:p-8 min-h-[420px]">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="liquid-glass w-10 h-10 rounded-[0.75rem] flex items-center justify-center text-white">{stepData.icon}</div>
-              <div>
-                <h3 className="font-body font-semibold text-white text-lg">{stepData.zhTitle}</h3>
-                <p className="text-xs text-white/30 font-body italic">{stepData.enTitle}</p>
-              </div>
-            </div>
-            <p className="text-sm text-white/75 font-body mb-1">{stepData.zhDesc}</p>
-            <p className="text-xs text-white/35 font-body italic mb-5">{stepData.enDesc}</p>
-            <div className="code-block mb-4" dangerouslySetInnerHTML={{ __html:
-              stepData.code
-                .replace(/^# (.+)$/gm, '<span class="cmt"># $1</span>')
-                .replace(/^(git |cd |mkdir |cat |python |pip |curl )/gm, '<span class="cmd">$1</span>')
-                .replace(/(https?:\/\/\S+)/g, '<span class="str">$1</span>')
-            }} />
-            <div className="liquid-glass rounded-xl p-4">
-              <p className="text-xs text-white/60 font-body leading-relaxed">{stepData.noteZh}</p>
-              <p className="text-[10px] text-white/25 font-body italic mt-1">{stepData.noteEn}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// ============================================================================
-// Section 6 — Benchmark (quick stats table, bilingual)
+// Section 5 — Benchmark (quick stats table, bilingual)
 // ============================================================================
 const Benchmark = () => (
   <section className="relative bg-black py-24">
@@ -776,9 +619,9 @@ const Footer = () => (
             className="text-sm text-white/70 font-body hover:text-white transition-colors flex items-center gap-2">
             <GithubIcon /> GitHub 仓库
           </a>
-          <a href="#start"
+          <a href="https://github.com/jiabeizhu547-tech/Bell-bio-ai#readme" target="_blank" rel="noopener"
             className="text-sm text-white/70 font-body hover:text-white transition-colors flex items-center gap-2">
-            📖 安装指南
+            📖 安装指南 · Install Guide
           </a>
         </div>
 
@@ -803,8 +646,6 @@ const App = () => (
     <Hero />
     <WhyNeed />
     <Capabilities />
-    <ModelScopeBanner />
-    <GettingStarted />
     <Benchmark />
     <Footer />
   </main>
