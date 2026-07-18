@@ -300,8 +300,8 @@ def _build_mutation_html(batch_result, sequence):
     results = batch_result["results"]
     errors = batch_result["errors"]
     n = len(results)
-    seq_display = sequence[:40] + ("..." if len(sequence) > 40 else "")
-
+    import html as _html
+    seq_display = _html.escape(sequence[:40]) + ("..." if len(sequence) > 40 else "")
     pathogenic = sum(1 for r in results if "pathogenic" in r["prediction"].lower() or "致病" in r["prediction"])
     damaging = sum(1 for r in results if "damaging" in r["prediction"].lower() or "影响功能" in r["prediction"])
     benign = sum(1 for r in results if "benign" in r["prediction"].lower() or "良性" in r["prediction"])

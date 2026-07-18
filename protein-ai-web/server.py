@@ -82,7 +82,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def _handle_api(self, path):
         try:
-            content_length = int(self.headers.get("Content-Length", 0))
+            content_length = min(int(self.headers.get("Content-Length", "0")), 1048576)  # Max 1MB
             body = self.rfile.read(content_length) if content_length else b"{}"
             data = json.loads(body) if body else {}
         except json.JSONDecodeError:
