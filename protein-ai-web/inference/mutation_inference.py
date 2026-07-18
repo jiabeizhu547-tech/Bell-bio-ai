@@ -1,4 +1,4 @@
-"""
+﻿"""
 突变效应预测推理模块
 基于 ESM-2 零样本突变打分（log-likelihood ratio）
 
@@ -220,16 +220,16 @@ def predict_mutation(sequence: str, mutation_str: str):
 
     # ---- 3. 综合判断 ----
     if llr < PATHOGENIC_THRESHOLD and disruption > DISRUPTION_THRESHOLD:
-        prediction = "🔴 可能致病 (Pathogenic)"
+        prediction = "[P] 可能致病 (Pathogenic)"
         confidence = min(1.0, abs(llr) / 3.0 + disruption * 3.0)
     elif llr < PATHOGENIC_THRESHOLD or disruption > DISRUPTION_THRESHOLD:
-        prediction = "🟠 可能影响功能 (Possibly Damaging)"
+        prediction = "[D] 可能影响功能 (Possibly Damaging)"
         confidence = min(1.0, abs(llr) / 4.0 + disruption * 2.0)
     elif llr > 0.5 and disruption < DISRUPTION_THRESHOLD / 2:
-        prediction = "🟢 可能良性 (Likely Benign)"
+        prediction = "[B] 可能良性 (Likely Benign)"
         confidence = min(1.0, (1.0 - abs(llr) / 3.0) * (1.0 - disruption * 5.0))
     else:
-        prediction = "🟡 不确定 (Uncertain)"
+        prediction = "[U] 不确定 (Uncertain)"
         confidence = 0.5
 
     return {

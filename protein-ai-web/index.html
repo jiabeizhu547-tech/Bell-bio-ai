@@ -102,6 +102,12 @@
 </head>
 <body>
 <div id="root"></div>
+<script>
+if (window.location.protocol === "file:") {
+  document.getElementById("root").innerHTML = "<div style="color:#fff;background:#000;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;text-align:center;padding:20px;"><div><h1 style="font-size:24px;margin-bottom:16px;">\u274c \u8bf7\u901a\u8fc7\u670d\u52a1\u5668\u8bbf\u95ee</h1><p style="font-size:14px;margin-bottom:12px;color:#888;">\u4e0d\u8981\u76f4\u63a5\u53cc\u51fb\u6253\u5f00 index.html</p><p style="font-size:16px;"><code style="background:#222;padding:8px 16px;border-radius:8px;font-size:18px;">http://localhost:8765</code></p></div></div>";
+  throw new Error("Use http://localhost:8765");
+}
+</script>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
@@ -612,12 +618,14 @@ const TOOLS = [
 ];
 
 // API helper
+const API_BASE = window.location.protocol === "file:" ? "http://127.0.0.1:8765" : "";
 const callAPI = async (endpoint, body, setResult, setLoading, setError) => {
   setLoading(true);
   setError(null);
   setResult(null);
   try {
-    const resp = await fetch(endpoint, {
+    const url = API_BASE + endpoint;
+    const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

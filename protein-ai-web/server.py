@@ -1,5 +1,5 @@
-"""
-Protein AI Local Server — serves landing page + runs ML inference directly.
+﻿"""
+Protein AI Local Server 鈥?serves landing page + runs ML inference directly.
 
 Usage:
     python server.py
@@ -11,13 +11,24 @@ import json
 import os
 import sys
 import traceback
+import sys as _sys
+import os as _os
+try:
+    _sys.stderr.flush()
+except (OSError, AttributeError):
+    _sys.stderr = open(_os.devnull, 'w')
+_os.environ.setdefault('HF_HUB_DISABLE_PROGRESS_BARS', '1')
+
+# Ensure script dir is in sys.path
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+if _script_dir not in sys.path:
+    sys.path.insert(0, _script_dir)
 
 PORT = 8765
 LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Lazy import — models load on first API call
 _api = None
-
 def get_api():
     global _api
     if _api is None:
@@ -44,8 +55,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "Not found")
 
     def do_OPTIONS(self):
-        self._cors_headers()
         self.send_response(204)
+        self._cors_headers()
         self.end_headers()
 
     # ---- Handlers ----
@@ -58,7 +69,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         ct = "image/png" if path.endswith(".png") else "application/octet-stream"
         self.send_header("Content-Type", ct)
-        self.send_header("Cache-Control", "public, max-age=3600")
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         with open(filepath, "rb") as f:
             self.wfile.write(f.read())
@@ -102,11 +113,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def log_message(self, fmt, *args):
-        msg = args[0] if args else ""
+        if not args:
+            return
+        msg = str(args[0])
         if "POST /api/" in msg:
             print(f"[api] {msg}")
         elif self.path.startswith("/static/"):
-            return  # suppress static file noise
+            return
+        elif "Exception" in msg or "Traceback" in msg:
+            return
         else:
             print(f"[server] {msg}")
 
@@ -115,14 +130,15 @@ if __name__ == "__main__":
     print(f"""
 ==================================================
   Protein AI - Local Server
-  Open:  http://localhost:{PORT}
+  Open:  http://127.0.0.1:{PORT}
   ML inference runs in-process (no Gradio needed)
   Press Ctrl+C to stop
 ==================================================
 """)
-    with http.server.HTTPServer(("", PORT), Handler) as httpd:
+    with http.server.HTTPServer(("127.0.0.1", PORT), Handler) as httpd:
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             print("\n[server] Shutting down...")
             httpd.shutdown()
+
