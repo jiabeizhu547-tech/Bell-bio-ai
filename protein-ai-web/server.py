@@ -43,6 +43,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     # ---- Routing ----
     def do_GET(self):
+        if ".." in self.path:
+            self.send_error(403)
+            return
         if self.path.startswith("/static/"):
             self._serve_static()
         else:
@@ -62,7 +65,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     # ---- Handlers ----
     def _serve_static(self):
         path = self.path.lstrip("/")
-        filepath = os.path.join(LOCAL_DIR, path)
+        filepath = os.path.normpath(os.path.join(LOCAL_DIR, path))
+        if not filepath.startswith(os.path.normpath(LOCAL_DIR)):
+            self.send_error(403)
+            return
         if not os.path.exists(filepath):
             self.send_error(404)
             return
@@ -96,7 +102,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self._json_response(404, {"error": "Unknown endpoint"})
                 return
         except Exception as e:
-            result = {"error": f"Server error: {e}\n{traceback.format_exc()}"}
+            result = {"error": "Prediction failed"}
 
         self._json_response(200, result)
 
