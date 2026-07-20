@@ -32,7 +32,7 @@ _api = None
 def get_api():
     global _api
     if _api is None:
-        from api_backend import predict_ss, predict_ec, predict_mutation
+        from api_backend import predict_ss, predict_ec, predict_mutation, predict_ss_batch
         _api = {"predict_ss": predict_ss, "predict_ec": predict_ec, "predict_mutation": predict_mutation, "predict_ss_batch": predict_ss_batch}
     return _api
 
