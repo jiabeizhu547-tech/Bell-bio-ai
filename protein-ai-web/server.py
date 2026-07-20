@@ -37,6 +37,20 @@ def get_api():
     return _api
 
 
+def _preload_models():
+    import threading
+    def _load():
+        try:
+            from api_backend import predict_ss, predict_ec
+            predict_ss('MKVLILACLVALALACTVQA')
+            predict_ec('MKVLILACLVALALACTVQA')
+            print('[server] Models loaded')
+        except:
+            pass
+    t = threading.Thread(target=_load, daemon=True)
+    t.start()
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=LOCAL_DIR, **kwargs)
@@ -142,6 +156,7 @@ if __name__ == "__main__":
 ==================================================
 """)
     with http.server.HTTPServer(("127.0.0.1", PORT), Handler) as httpd:
+        _preload_models()
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

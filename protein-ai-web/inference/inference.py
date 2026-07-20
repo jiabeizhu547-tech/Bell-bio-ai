@@ -80,7 +80,9 @@ def _load_esm2_model():
         ESM_MODEL_NAME, num_classes=3, dropout=0.0, local_files_only=False,
     ).to(DEVICE)
 
-    ckpt_path = MODEL_DIR / "best_model_esm2.pt"
+    ckpt_path = MODEL_DIR / "best_model_esm2_fp16.pt"
+    if not ckpt_path.exists():
+        ckpt_path = MODEL_DIR / "best_model_esm2.pt"
     if not ckpt_path.exists():
         raise FileNotFoundError(
             f"ESM-2 模型文件未找到: {ckpt_path}\n"
@@ -88,6 +90,7 @@ def _load_esm2_model():
         )
 
     checkpoint = torch.load(ckpt_path, weights_only=False, map_location=DEVICE)
+    _esm2_model = _esm2_model.half()
     _esm2_model.load_state_dict(checkpoint["model_state_dict"])
     _esm2_model.eval()
 
