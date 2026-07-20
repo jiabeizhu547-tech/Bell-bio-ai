@@ -499,6 +499,41 @@ def _save_plot(fig, prefix):
 # Public API functions
 # ============================================================================
 
+def parse_fasta(text: str):
+    """Parse FASTA text into list of (name, sequence) tuples."""
+    results = []
+    current_name = ""
+    current_seq = []
+    for line in text.strip().split("\n"):
+        line = line.strip()
+        if line.startswith(">"):
+            if current_seq:
+                results.append((current_name, "".join(current_seq)))
+            current_name = line[1:].split()[0]
+            current_seq = []
+        elif line:
+            current_seq.append(line)
+    if current_seq:
+        results.append((current_name, "".join(current_seq)))
+    return results if results else [("", text.strip().replace("\n", ""))]
+
+
+def predict_ss_batch(fasta_text: str):
+    """Batch SS prediction from FASTA text."""
+    from inference import predict_secondary_structure
+    sequences = parse_fasta(fasta_text)
+    results_list = []
+    for name, seq in sequences:
+        try:
+            r = predict_secondary_structure(seq)
+            results_list.append({"name": name, "seq": seq[:60], "counts": r["counts"], "structure": r["structure"]})
+        except Exception as e:
+            results_list.append({"name": name, "seq": seq[:60], "error": str(e)})
+    total = len(results_list)
+    ok = sum(1 for r in results_list if "error" not in r)
+    return {"results": results_list, "total": total, "ok": ok, "fail": total - ok}
+
+
 def predict_ss(sequence: str):
     """Run secondary structure prediction. Returns dict with HTML and plot URL."""
     inf = _get_inference()

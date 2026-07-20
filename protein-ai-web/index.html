@@ -605,6 +605,11 @@ const TOOLS = [
     placeholder: '粘贴氨基酸序列（单字母大写），如 MKVLILACLVALALACTVQ...',
   },
   {
+    key: 'batch', icon: '📋', label: '批量预测', desc: '一次预测多条序列',
+    tagline: '支持 FASTA 格式',
+    placeholder: '粘贴 FASTA 格式序列...',
+  },
+  {
     key: 'ec', icon: '🧪', label: 'EC 酶分类', desc: '七大类酶功能',
     tagline: 'ESM-2 特征提取 + MLP，测试准确率 87.3%',
     placeholder: '输入任意酶蛋白氨基酸序列…',
@@ -793,6 +798,55 @@ const AppSection = () => {
 
         {/* ======== TAB 2: EC Classification ======== */}
         {activeTab === 1 && (
+          <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
+            <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
+              <div>
+                <h3 className="text-xl font-body font-semibold text-white flex items-center gap-2">
+                  <span className="text-2xl">📋</span> 批量预测
+                </h3>
+                <p className="mt-1 text-sm text-white/50 font-body">支持 FASTA 格式，一次预测多条</p>
+              </div>
+              <textarea id="batchInput" rows={8}
+                placeholder=">seq1&#10;MKVLILACLVALALACTVQA&#10;>seq2&#10;ACDEFGHIKLMNPQRSTVWY"
+                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 text-sm text-white/90 font-mono placeholder:text-white/20 focus:outline-none focus:border-white/20 transition-colors resize-y"
+              />
+              <button id="batchBtn" onClick={() => {
+                const input = document.getElementById('batchInput').value;
+                if (!input.trim()) return;
+                const btn = document.getElementById('batchBtn');
+                const result = document.getElementById('batchResult');
+                btn.disabled = true; btn.innerHTML = '<span>Predicting...</span>';
+                fetch('/api/predict_ss_batch', {
+                  method: 'POST', headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({fasta: input})
+                }).then(r => r.json()).then(data => {
+                  if (data.error) { result.innerHTML = '<div class=\"text-red-400\">' + data.error + '</div>'; return; }
+                  let html = '<div class=\"text-sm text-white/70 mb-3\">共 ' + data.total + ' 条，成功 ' + data.ok + ' 条</div>';
+                  html += '<table class=\"w-full text-sm\"><thead><tr class=\"text-white/50 border-b border-white/10\"><th class=\"text-left py-2\">名称</th><th class=\"text-left py-2\">长度</th><th class=\"text-left py-2\">H</th><th class=\"text-left py-2\">E</th><th class=\"text-left py-2\">C</th></tr></thead><tbody>';
+                  data.results.forEach(function(x) {
+                    if (x.error) {
+                      html += '<tr class=\"border-b border-white/5\"><td class=\"py-2\">' + x.name + '</td><td class=\"py-2 text-red-400\" colspan=\"4\">' + x.error + '</td></tr>';
+                    } else {
+                      var c = x.counts;
+                      var total = c.H + c.E + c.C;
+                      html += '<tr class=\"border-b border-white/5\"><td class=\"py-2 text-white/90\">' + x.name + '</td><td class=\"py-2 text-white/60\">' + total + '</td><td class=\"py-2 text-[#FF6B6B]\">' + c.H + '</td><td class=\"py-2 text-[#60A5FA]\">' + c.E + '</td><td class=\"py-2 text-[#FBBF24]\">' + c.C + '</td></tr>';
+                    }
+                  });
+                  html += '</tbody></table>';
+                  result.innerHTML = html;
+                  btn.disabled = false; btn.innerHTML = '<span>🔬</span><span>开始批量预测</span>';
+                }).catch(function(e) {
+                  result.innerHTML = '<div class=\"text-red-400\">Network error: ' + e.message + '</div>';
+                  btn.disabled = false; btn.innerHTML = '<span>🔬</span><span>开始批量预测</span>';
+                });
+              }} disabled={false}
+                className="liquid-glass-strong rounded-full px-8 py-4 text-sm font-body font-semibold text-white flex items-center justify-center gap-3 hover:bg-white/[0.03] transition-all duration-200 group disabled:opacity-40 disabled:cursor-not-allowed"
+              ><span className="text-lg">🔬</span><span>开始批量预测</span></button>
+              <div id="batchResult"></div>
+            </div>
+          </div>
+        )}
+        {activeTab === 2 && (
           <div className="flex-1 animate-[fadeIn_0.3s_ease-out] max-w-3xl">
             <div className="liquid-glass rounded-[1.5rem] p-6 md:p-8 flex flex-col gap-5">
               <div>

@@ -33,7 +33,7 @@ def get_api():
     global _api
     if _api is None:
         from api_backend import predict_ss, predict_ec, predict_mutation
-        _api = {"predict_ss": predict_ss, "predict_ec": predict_ec, "predict_mutation": predict_mutation}
+        _api = {"predict_ss": predict_ss, "predict_ec": predict_ec, "predict_mutation": predict_mutation, "predict_ss_batch": predict_ss_batch}
     return _api
 
 
@@ -66,7 +66,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
-        if self.path in ("/api/predict_ss", "/api/predict_ec", "/api/predict_mutation"):
+        if self.path in ("/api/predict_ss", "/api/predict_ec", "/api/predict_mutation", "/api/predict_ss_batch"):
             self._handle_api(self.path)
         else:
             self.send_error(404, "Not found")
@@ -110,6 +110,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 result = api["predict_ss"](data.get("sequence", ""))
             elif path == "/api/predict_ec":
                 result = api["predict_ec"](data.get("sequence", ""))
+            elif path == "/api/predict_ss_batch":
+                result = api["predict_ss_batch"](data.get("fasta", ""))
             elif path == "/api/predict_mutation":
                 result = api["predict_mutation"](data.get("sequence", ""), data.get("mutations", ""))
             else:
