@@ -11,7 +11,11 @@ import sys, os, re, json, argparse
 from collections import defaultdict
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _script_dir)
+_inf_dir = os.path.join(_script_dir, 'inference')
+if _inf_dir not in sys.path:
+    sys.path.insert(0, _inf_dir)
 
 # ---------- 评估指标 ----------
 
