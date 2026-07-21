@@ -788,6 +788,12 @@ const AppSection = () => {
                   <div dangerouslySetInnerHTML={{ __html: resultSS.stats_html }} />
                   <div className="liquid-glass rounded-2xl p-4">
                     <pre className="text-xs text-white/60 font-mono whitespace-pre-wrap">{resultSS.structure_text}</pre>
+                    <button onClick={() => {
+                      var blob = new Blob([resultSS.structure_text], {type: 'text/plain'});
+                      var url = URL.createObjectURL(blob);
+                      var a = document.createElement('a'); a.href = url; a.download = 'ss_result.txt'; a.click();
+                      URL.revokeObjectURL(url);
+                    }} className="text-[11px] text-white/40 hover:text-white/70 mt-2 transition-colors">⬇ 下载结果</button>
                   </div>
                   <ResultImage src={resultSS.plot_url} label="Visualization" />
                 </div>
@@ -907,9 +913,16 @@ const AppSection = () => {
               )}
 
               {resultEC && (
-                <div className="flex flex-col gap-4 mt-2">
+                <div className="flex flex-col gap-4 mt-2" id="ecResult">
                   <div dangerouslySetInnerHTML={{ __html: resultEC.html }} />
                   <ResultImage src={resultEC.plot_url} label="Probability Distribution" />
+                  <button onClick={() => {
+                    var html = document.getElementById('ecResult').querySelector('div').innerText;
+                    var blob = new Blob([html], {type: 'text/plain'});
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a'); a.href = url; a.download = 'ec_result.txt'; a.click();
+                    URL.revokeObjectURL(url);
+                  }} className="text-[11px] text-white/40 hover:text-white/70 transition-colors">⬇ 下载结果</button>
                 </div>
               )}
             </div>
@@ -964,9 +977,16 @@ const AppSection = () => {
               )}
 
               {resultMS && (
-                <div className="flex flex-col gap-4 mt-2">
+                <div className="flex flex-col gap-4 mt-2" id="mutResult">
                   <div dangerouslySetInnerHTML={{ __html: resultMS.html }} />
                   {resultMS.plot_url && <ResultImage src={resultMS.plot_url} label="Mutation Effect Analysis" />}
+                  <button onClick={() => {
+                    var html = document.getElementById('mutResult').querySelector('div').innerText;
+                    var blob = new Blob([html], {type: 'text/plain'});
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a'); a.href = url; a.download = 'mut_result.txt'; a.click();
+                    URL.revokeObjectURL(url);
+                  }} className="text-[11px] text-white/40 hover:text-white/70 transition-colors">⬇ 下载结果</button>
                 </div>
               )}
             </div>
