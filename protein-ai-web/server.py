@@ -24,7 +24,8 @@ _script_dir = os.path.dirname(os.path.abspath(__file__))
 if _script_dir not in sys.path:
     sys.path.insert(0, _script_dir)
 
-PORT = 8765
+PORT = int(os.environ.get("PORT", "8765"))
+HOST = os.environ.get("HOST", "127.0.0.1")
 LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Lazy import — models load on first API call
@@ -152,12 +153,12 @@ if __name__ == "__main__":
     print(f"""
 ==================================================
   Protein AI - Local Server
-  Open:  http://127.0.0.1:{PORT}
+  Open:  http://{HOST}:{PORT}
   ML inference runs in-process (no Gradio needed)
   Press Ctrl+C to stop
 ==================================================
 """)
-    with http.server.HTTPServer(("127.0.0.1", PORT), Handler) as httpd:
+    with http.server.HTTPServer((HOST, PORT), Handler) as httpd:
         _preload_models()
         try:
             httpd.serve_forever()

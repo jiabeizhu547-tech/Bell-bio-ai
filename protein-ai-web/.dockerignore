@@ -1,0 +1,14 @@
+﻿*.pyc
+__pycache__/
+.git/
+.gitignore
+*.md
+fix_*.py
+test_*.py
+run_me.py
+start.bat
+start.py
+.DS_Store
+inference/data/
+inference/__pycache__/
+static/*.png
