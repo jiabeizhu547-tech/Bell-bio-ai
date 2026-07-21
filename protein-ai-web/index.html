@@ -834,6 +834,25 @@ const AppSection = () => {
                   });
                   html += '</tbody></table>';
                   result.innerHTML = html;
+                  // Add download CSV button
+                  var dlBtn = document.createElement('button');
+                  dlBtn.className = 'liquid-glass-strong rounded-full px-5 py-2 text-xs font-body font-semibold text-white mt-4';
+                  dlBtn.textContent = '⬇ 下载 CSV';
+                  dlBtn.onclick = function() {
+                    var csv = 'name,length,H,E,C\n';
+                    data.results.forEach(function(x) {
+                      if (!x.error) {
+                        var c = x.counts;
+                        csv += x.name + ',' + (c.H + c.E + c.C) + ',' + c.H + ',' + c.E + ',' + c.C + '\n';
+                      }
+                    });
+                    var blob = new Blob([csv], {type: 'text/csv'});
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url; a.download = 'batch_results.csv'; a.click();
+                    URL.revokeObjectURL(url);
+                  };
+                  result.appendChild(dlBtn);
                   btn.disabled = false; btn.innerHTML = '<span>🔬</span><span>开始批量预测</span>';
                 }).catch(function(e) {
                   result.innerHTML = '<div class=\"text-red-400\">Network error: ' + e.message + '</div>';
